@@ -153,25 +153,25 @@ ${extends("/goframe/function_layout.httl")}
                 <div property="columns">
                     <div type="checkcolumn" headerAlign="center" width="5"></div>
                     <div type="indexcolumn" headerAlign="center" width="8">位置</div>
-                    <div field="name" headerAlign="center" allowSort="true" width="28">源字段名称<font color="#FF0000">（必填）</font>
+                    <div field="name" headerAlign="center" allowSort="true" width="28">【源】名称<font color="#FF0000">（必填）</font>
                         <input property="editor" class="nui-combobox"
                                textField="name" valueField="name" allowInput="true" dataField="data"
                                onbeforeshowpopup="targetFilterColumn" vtype="maxLength:64" required="true" onvaluechanged="mappingColChange"/>
                     </div>
-                    <div field="type" headerAlign="center" allowSort="true" width="15">类型</font>
+                    <div field="type" headerAlign="center" allowSort="true" width="15">【源】类型</font>
                         <input property="editor" class="nui-dictcombobox" valueField="dictId" textField="dictName"
                                dictTypeId="IQ_MD_COL_DATA_TYPE" value="STRING" vtype="maxLength:32"/>
                     </div>
-                    <div field="length" headerAlign="center" allowSort="true" width="15">长度
+                    <div field="length" headerAlign="center" allowSort="true" width="15">【源】长度
                         <input property="editor" class="nui-textbox" vtype="maxLength:4000"/>
                     </div>
-                    <div field="colId" headerAlign="center" allowSort="true" width="28">目标字段名称<font color="#FF0000">（必填）</font>
+                    <div field="describe" headerAlign="center" allowSort="true" width="30">【源】描述<font color="#FF0000">（必填）</font>
+                        <input property="editor" class="nui-textbox" vtype="maxLength:4000"/>
+                    </div>
+                    <div field="colId" headerAlign="center" allowSort="true" width="28">【目标】名称<font color="#FF0000">（必填）</font>
                         <input property="editor" class="nui-combobox"
                                textField="name" valueField="name" allowInput="true" dataField="data"
                                onbeforeshowpopup="targetMateColumn" vtype="maxLength:64" required="true"/>
-                    </div>
-                    <div field="describe" headerAlign="center" allowSort="true" width="30">描述<font color="#FF0000">（必填）</font>
-                        <input property="editor" class="nui-textbox" vtype="maxLength:4000"/>
                     </div>
                     <div field="note" headerAlign="center" allowSort="true" width="20">备注
                         <input property="editor" class="nui-textbox" vtype="maxLength:4000"/>
@@ -460,22 +460,22 @@ ${extends("/goframe/function_layout.httl")}
             cache: false,
             async:false,
             contentType: 'application/json',
-            success: function (data) {
-                //对data内容解析加载到grid2中
-                if(data && data.data){
-                    for (var i = 0, len = data.data.length; i < len; i++) {
+            success: function (result) {
+                if (result.status == true) {
+                    var data = result.data;
+                    for (var i = 0, len = data.length; i < len; i++) {
                         filterCols.push({
-                            "name": data.data[i].name,
+                            "name": data[i].name,
                             "colId": "",
-                            "note": data.data[i].note,
-                            "describe": data.data[i].describe,
-                            "length": data.data[i].length,
-                            "type": data.data[i].type == ""?"STRING":data.data[i].type
+                            "note": data[i].note,
+                            "describe": data[i].describe,
+                            "length": data[i].length,
+                            "type": data[i].type == "" ? "STRING" : data[i].type
                         });
                     }
                 }
+                nui.alert(result.message);
                 nui.get("loadMapping").enable();
-                nui.alert("加载字段成功!");
             }
         });
     }

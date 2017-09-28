@@ -351,11 +351,21 @@ public class RealtimeJobService {
         dto.setStatus(info.getStatus().getValue());
         dto.setModelName(info.getModel().getName());
         dto.setModelId(info.getModel().getId());
-        dto.setStartTime(format.format(info.getStartTime()));
-        dto.setStopTime(format.format(info.getStopTime()));
-        dto.setRunTime(format.format(info.getRunTime()));
-        dto.setUpdateTime(format.format(info.getUpdateTime()));
-        dto.setEndTime(format.format(info.getEndTime()));
+        if(info.getStartTime()!=null){
+            dto.setStartTime(format.format(info.getStartTime()));
+        }
+        if(info.getStopTime()!=null){
+            dto.setStopTime(format.format(info.getStopTime()));
+        }
+        if(info.getRunTime()!=null){
+            dto.setRunTime(format.format(info.getRunTime()));
+        }
+        if(info.getUpdateTime()!=null){
+            dto.setUpdateTime(format.format(info.getUpdateTime()));
+        }
+        if(info.getEndTime()!=null){
+            dto.setEndTime(format.format(info.getEndTime()));
+        }
         dto.setStartHost(info.getStartHost());
         dto.setStopHost(info.getStopHost());
         return dto;
@@ -380,7 +390,25 @@ public class RealtimeJobService {
     public List<RealtimeNodeInfoDto> selectNodesDto(String id) {
         List<RealtimeNodeInfo> realtimeNodeInfos = realtimeNodeService.selectList(id);
         if (realtimeNodeInfos == null || realtimeNodeInfos.size() == 0) {
-            return null;
+            /**测试数据**/
+            List<RealtimeNodeInfoDto> list1 = new ArrayList<>();
+            RealtimeNodeInfo realtimeNodeInfo = new RealtimeNodeInfo();
+            realtimeNodeInfo.setStatus(RealtimeStatus.RUNNING);
+            realtimeNodeInfo.setUpdateTime(new Date());
+            realtimeNodeInfo.setMessage("text1...");
+            realtimeNodeInfo.setHost("192.168.1.61");
+            realtimeNodeInfo.setId("node_1");
+            realtimeNodeInfo.setEndTime(new Date());
+            realtimeNodeInfo.setRunTime(new Date());
+
+            RealtimeNodeInfo noteInfo = realtimeNodeInfo;
+            noteInfo.setId("node_2");
+            noteInfo.setHost("192.168.1.62");
+            list1.add(infoToDto(realtimeNodeInfo));
+            list1.add(infoToDto(noteInfo));
+            return list1;
+            /**测试数据结束**/
+          //  return null;
         }
         List<RealtimeNodeInfoDto> list = new ArrayList<>();
         for (RealtimeNodeInfo info : realtimeNodeInfos) {

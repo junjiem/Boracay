@@ -80,7 +80,7 @@ public class Model extends Base {
 
     @Override
     public String getId() {
-        if (StringUtils.isBlank(name))
+        if (StringUtils.isBlank(id))
             throw new IllegalArgumentException("id不能为空");
         return id;
     }

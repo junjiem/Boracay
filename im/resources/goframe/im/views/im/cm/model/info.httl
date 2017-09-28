@@ -146,23 +146,23 @@ ${extends("/goframe/function_layout.httl")}
                     <div property="columns">
                         <div type="checkcolumn" headerAlign="center" width="5"></div>
                         <div type="indexcolumn" headerAlign="center" width="8">位置</div>
-                        <div field="name" headerAlign="center" allowSort="true" width="28">源字段名称<font color="#FF0000">（必填）</font>
+                        <div field="name" headerAlign="center" allowSort="true" width="28">【源】名称<font color="#FF0000">（必填）</font>
                             <input property="editor" class="nui-textbox" vtype="maxLength:256" readonly="true"/>
                         </div>
-                        <div field="type" headerAlign="center" allowSort="true" width="15">类型</font>
+                        <div field="type" headerAlign="center" allowSort="true" width="15">【源】类型</font>
                             <input property="editor" class="nui-dictcombobox" valueField="dictId" textField="dictName"
                                    dictTypeId="IQ_MD_COL_DATA_TYPE" value="STRING" vtype="maxLength:32" readonly="true"/>
                         </div>
-                        <div field="length" headerAlign="center" allowSort="true" width="15">长度
+                        <div field="length" headerAlign="center" allowSort="true" width="15">【源】长度
                             <input property="editor" class="nui-textbox" vtype="maxLength:4000" readonly="true"/>
                         </div>
-                        <div field="colId" headerAlign="center" allowSort="true" width="28">目标字段名称<font color="#FF0000">（必填）</font>
+                        <div field="describe" headerAlign="center" allowSort="true" width="30">【源】描述<font color="#FF0000">（必填）</font>
+                            <input property="editor" class="nui-textbox" vtype="maxLength:4000" readonly="true"/>
+                        </div>
+                        <div field="colId" headerAlign="center" allowSort="true" width="28">【目标】名称<font color="#FF0000">（必填）</font>
                             <input name="colName" property="editor" class="nui-combobox"
                                    textField="name" valueField="pkId" allowInput="true" dataField="data"
                                    onbeforeshowpopup="targetMateColumn" vtype="maxLength:64"  readonly="true"/>
-                        </div>
-                        <div field="describe" headerAlign="center" allowSort="true" width="30">描述<font color="#FF0000">（必填）</font>
-                            <input property="editor" class="nui-textbox" vtype="maxLength:4000" readonly="true"/>
                         </div>
                         <div field="note" headerAlign="center" allowSort="true" width="20">备注
                             <input property="editor" class="nui-textbox" vtype="maxLength:4000" readonly="true"/>

@@ -395,7 +395,7 @@ public abstract class HBaseWrapper extends Wrapper implements BatchTargetProvide
         str = getHashStr(vals, valueMap);
         if (StringUtils.isNotBlank(str)) list.add(str);
 
-        return String.join("|", list);
+        return StringUtils.join(list, "|");
     }
 
     // 获取不同编码的字符串长度
@@ -464,7 +464,7 @@ public abstract class HBaseWrapper extends Wrapper implements BatchTargetProvide
         for (MetadataCol col : vals) {
             list.add(valueMap.get(col.getName()));
         }
-        return String.join(seprator, list);
+        return StringUtils.join(list, seprator);
     }
 
     @Override

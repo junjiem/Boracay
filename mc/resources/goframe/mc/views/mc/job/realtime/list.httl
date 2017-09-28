@@ -32,57 +32,71 @@ ${extends("/goframe/function_layout.httl")}
             <div id="form1">
                 <table style="width:100%">
                     <tr>
-                        <td class="tit roleLabel" style="width: 100px;text-align: right">用户名：</td>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">模型名称：</td>
                         <td class="roleText" style="width: 25%">
-                            <input name="userName" class="nui-textbox" style="width:98%;"/>
+                            <input name="modelName" class="nui-textbox" style="width:98%;"/>
                         </td>
-                        <td class="tit roleLabel" style="width: 100px;text-align: right">服务名：</td>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">准备启动的时间：</td>
                         <td class="roleText" style="width: 25%">
-                            <input name="serviceName" class="nui-textbox" style="width:98%;"/>
+                            <input name="startTimeStart" class="nui-textbox" style="width:50%;"/>
                         </td>
-                        <td class="tit roleLabel" style="width: 100px;text-align: right">请求内容：</td>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">～</td>
                         <td class="roleText" style="width: 25%">
-                            <input name="requestContent" class="nui-textbox" style="width:98%;"/>
+                            <input name="startTimeEnd" class="nui-textbox" style="width:50%;"/>
                         </td>
                     </tr>
                     <tr>
-                        <td class="tit roleLabel" style="width: 100px;text-align: right">应用类型：</td>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">模型状态：</td>
                         <td class="roleText" style="width: 25%">
-                            <input name="appType" class="nui-dictcombobox" valueField="dictId" textField="dictName"
+                            <input name="status" class="nui-dictcombobox" valueField="dictId" textField="dictName"
                                    emptyText="全部" dictTypeId="UDSP_SERVICE_TYPE" showNullItem="true" nullItemText="全部"
                                    style="width:98%;"/>
                         </td>
-                        <td class="tit roleLabel" style="width: 100px;text-align: right">应用名：</td>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">开始运行的时间：</td>
                         <td class="roleText" style="width: 25%">
-                            <input name="appName" class="nui-textbox" style="width:98%;"/>
+                            <input name="runTimeStart" class="nui-textbox" style="width:98%;"/>
                         </td>
-                        <td class="tit roleLabel" style="width: 100px;text-align: right">请求类型：</td>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">～</td>
                         <td class="roleText" style="width: 25%">
-                            <input name="requestType" class="nui-dictcombobox" valueField="dictId" textField="dictName"
-                                   emptyText="全部" dictTypeId="UDSP_REQUEST_TYPE" showNullItem="true" nullItemText="全部"
-                                   style="width:98%;"/>
+                            <input name="runTimeEnd" class="nui-textbox" style="width:98%;"/>
                         </td>
                     </tr>
                     <tr>
-                        <td style="width: 100px;text-align: right">请求开始时间：</td>
-                        <td style="width: 25%">
-                            <input name="startTimeStart" class="nui-datepicker" allowInput="true"
-                                   showTime="true" format="yyyy-MM-dd HH:mm:ss" timeFormat="HH:mm:ss"
-                                   style="width: 46%"/>
-                            -
-                            <input name="startTimeEnd" class="nui-datepicker" allowInput="true"
-                                   showTime="true" format="yyyy-MM-dd HH:mm:ss" timeFormat="HH:mm:ss"
-                                   style="width: 46%"/>
-                        </td>
-                        <td class="tit roleLabel" style="width: 100px;text-align: right">服务器：</td>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">发起启动命令的节点：</td>
                         <td class="roleText" style="width: 25%">
-                            <input name="host" class="nui-textbox" style="width:98%;"/>
+                            <input name="startHost" class="nui-textbox" style="width:98%;"/>
                         </td>
-                        <td class="tit roleLabel" style="width: 100px;text-align: right">同步/异步：</td>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">准备停止的时间：</td>
                         <td class="roleText" style="width: 25%">
-                            <input name="syncType" class="nui-dictcombobox" valueField="dictId" textField="dictName"
-                                   emptyText="全部" dictTypeId="UDSP_SYNC_TYPE" showNullItem="true" nullItemText="全部"
-                                   style="width:98%;"/>
+                            <input name="stopTimeStart" class="nui-textbox" style="width:98%;"/>
+                        </td>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">～</td>
+                        <td class="roleText" style="width: 25%">
+                            <input name="stopTimeEnd" class="nui-textbox" style="width:98%;"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">发起停止命令的节点：</td>
+                        <td class="roleText" style="width: 25%">
+                            <input name="stopHost" class="nui-textbox" style="width:98%;"/>
+                        </td>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">任务停止的时间：</td>
+                        <td class="roleText" style="width: 25%">
+                            <input name="endTimeStart" class="nui-textbox" style="width:98%;"/>
+                        </td>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">～</td>
+                        <td class="endTimeEnd" style="width: 25%">
+                            <input name="runTimeEnd" class="nui-textbox" style="width:98%;"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">更新信息的时间：</td>
+                        <td class="roleText" style="width: 25%">
+                            <input name="updateTimeStart" class="nui-textbox" style="width:98%;"/>
+                        </td>
+                        <td class="tit roleLabel" style="width: 100px;text-align: right">～</td>
+                        <td class="endTimeEnd" style="width: 25%">
+                            <input name="updateTimeEnd" class="nui-textbox" style="width:98%;"/>
                         </td>
                     </tr>
                     <tr>
@@ -101,40 +115,34 @@ ${extends("/goframe/function_layout.httl")}
 <div class="nui-fit" style="height: 100px;">
 
     <div id="datagrid1" class="nui-datagrid" style="width:100%;height:100%;" sortMode="client"
-         url="${basePath}/mc/current/page" idField="pkId" allowResize="false"
+         url="${basePath}/im/job/realtime/page" idField="pkId" allowResize="false"
          sizeList="[10,20,50,100]" pageSize="20" multiSelect="true" dataField="data"
          allowCellSelect="false" onrowdblclick="info" onshowrowdetail="onShowRowDetail">
         <div property="columns">
             <div type="expandcolumn" width="20">#</div>
-            <div field="userName" headerAlign="center" allowSort="true">用户名</div>
-            <div field="serviceName" headerAlign="center" allowSort="true">服务名</div>
-            <div field="appType" headerAlign="center" allowSort="true" renderer="renderAppType">应用类型</div>
-            <div field="appName" headerAlign="center" allowSort="true">应用名</div>
-            <div field="syncType" headerAlign="center" allowSort="true" renderer="renderSyncType">同步/异步</div>
-            <div field="requestType" headerAlign="center" allowSort="true" renderer="renderRequestType">请求类型</div>
-            <div field="requestContent" headerAlign="center" allowSort="true">请求内容</div>
-            <div field="startTime" headerAlign="center" allowSort="true" renderer="timeFormat">请求开始时间</div>
-            <div field="host" headerAlign="center" allowSort="true">服务器</div>
-            <div field="pid" headerAlign="center" allowSort="true">线程ID</div>
+            <div field="modelName" headerAlign="center" allowSort="true">模型名称</div>
+            <div field="status" headerAlign="center" allowSort="true">模型状态</div>
+            <div field="runTime" headerAlign="center" allowSort="true">开始运行时间</div>
+            <div field="startTime" headerAlign="center" allowSort="true">准备启动时间</div>
+            <div field="startHost" headerAlign="center" allowSort="true">发起启动命令节点</div>
+            <div field="stopHost" headerAlign="center" allowSort="true">发起停止命令节点</div>
+            <div field="updateTime" headerAlign="center" allowSort="true">更新信息时间</div>
+            <div field="stopTime" headerAlign="center" allowSort="true">准备停止时间</div>
+            <div field="endTime" headerAlign="center" allowSort="true">任务停止时间</div>
         </div>
     </div>
 
-    <div id="form2" style="display:none;">
+    <div id="detailGrid_Form" style="display:none;">
         <div id="employee_grid" class="mini-datagrid" style="width:100%;height:150px;"
-             url="../data/AjaxService.aspx?method=GetDepartmentEmployees" onrowdblclick="info">
+             url="" onrowdblclick="info">
             <div property="columns">
-                <div field="loginname" width="120" headerAlign="center" allowSort="true">员工帐号
-                    <input property="editor" class="mini-textbox"/>
-                </div>
-                <div field="gender" width="100" allowSort="true" renderer="onGenderRenderer" align="center"
-                     headerAlign="center">性别
-                </div>
-                <div field="age" width="100" allowSort="true">年龄
-                </div>
-                <div field="birthday" width="100" allowSort="true" dateFormat="yyyy-MM-dd">出生日期
-                </div>
-                <div field="createtime" width="100" headerAlign="center" dateFormat="yyyy-MM-dd" allowSort="true">创建日期
-                </div>
+                <div type="expandcolumn" width="20">#</div>
+                <div field="host" headerAlign="center" allowSort="true">主机名称</div>
+                <div field="status" headerAlign="center" allowSort="true">运行状态</div>
+                <div field="runTime" headerAlign="center" allowSort="true">开始运行时间</div>
+                <div field="endTime" headerAlign="center" allowSort="true" renderer="renderRequestType">任务停止时间</div>
+                <div field="updateTime" headerAlign="center" allowSort="true">更新信息时间</div>
+                <div field="message" headerAlign="center" allowSort="true">信息</div>
             </div>
         </div>
     </div>
@@ -144,7 +152,7 @@ ${extends("/goframe/function_layout.httl")}
 <script type="text/javascript">
     var grid1;
     var grid2;
-    var form2;
+    var detailGrid_Form;
 
     /**
      * 按需加载资源文件
@@ -154,8 +162,8 @@ ${extends("/goframe/function_layout.httl")}
         grid1 = nui.get("datagrid1");
         grid1.load();
         $("#pull").hide();
-        grid2 = mini.get("datagrid2");
-        form2 = document.getElementById("form2");
+        grid2 = mini.get("employee_grid");
+        detailGrid_Form = document.getElementById("detailGrid_Form");
     });
 
     /**
@@ -165,9 +173,11 @@ ${extends("/goframe/function_layout.httl")}
         var sender = e.sender;
         var record = e.record;
         var td = sender.getRowDetailCellEl(record);
-        td.appendChild(form2);
-        form2.style.display = "block";
-        grid2.load({dept_id: record.id});
+        td.appendChild(detailGrid_Form);
+        detailGrid_Form.style.display = "block";
+        var url = "${basePath}/im/job/realtime/select/nodes/"+record.id;
+        grid2.setUrl(url)
+        grid2.load();
     }
 
     /**
