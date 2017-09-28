@@ -102,7 +102,8 @@ ${extends("/goframe/function_layout.httl")}
         <div class="nui-fit" style="height:150px; padding: 0px 5px 0px 5px;">
             <div id="datagrid1" class="nui-datagrid" style="width:100%; height: 100%;" dataField="data"
                  idField="pkId" multiSelect="true" allowCellEdit="true" allowCellSelect="true" sortMode="client"
-                 showPager="false" editNextOnEnterKey="true" editNextRowCell="true" onselectionchanged="selectedProperties">
+                 showPager="false" editNextOnEnterKey="true" editNextRowCell="true" onselectionchanged="selectedProperties"
+                 url="${basePath}/com/props/select/${pkId}">
                 <div property="columns">
                     <div type="checkcolumn" headerAlign="center" width="5"></div>
                     <div type="indexcolumn" headerAlign="center" width="8">位置</div>
@@ -321,14 +322,7 @@ ${extends("/goframe/function_layout.httl")}
         });
 
         //加载参数栏
-        $.post("${basePath}/com/props/select/${pkId}", {}, function (data) {
-
-            grid1.addRows(data.data);
-            //加载源字段信息
-            getSrcCols();
-            autoMapping();
-        });
-
+        grid1.load();
         grid2.load();
         grid4.load();
 

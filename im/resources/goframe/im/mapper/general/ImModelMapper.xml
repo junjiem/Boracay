@@ -37,9 +37,9 @@
       TYPE, BUILD_MODE, UPDATE_MODE,E_DS_ID,STATUS)
     values (#{pkId,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{describe,jdbcType=VARCHAR}, 
       #{sDsId,jdbcType=VARCHAR},#{tMdId,jdbcType=VARCHAR},
-      #{note,jdbcType=VARCHAR}, #{delFlg,jdbcType=CHAR}, #{crtUser,jdbcType=VARCHAR}, 
+      #{note,jdbcType=VARCHAR}, '0' , #{crtUser,jdbcType=VARCHAR},
       #{crtTime,jdbcType=VARCHAR}, #{uptUser,jdbcType=VARCHAR}, #{uptTime,jdbcType=VARCHAR}, 
-      #{type,jdbcType=CHAR}, #{buildMode,jdbcType=CHAR}, #{updateMode,jdbcType=CHAR},#{eDsId,jdbcType=VARCHAR},#{status,jdbcType=CHAR})
+      #{type,jdbcType=CHAR}, #{buildMode,jdbcType=CHAR}, #{updateMode,jdbcType=CHAR},#{eDsId,jdbcType=VARCHAR},'1')
   </insert>
   <update id="updateByPrimaryKey" parameterType="com.hex.bigdata.udsp.im.model.ImModel" >
     update IM_MODEL
@@ -95,15 +95,11 @@
         <choose>
           <!-- 未建模-->
           <when test="isBuilded != null and isBuilded == '1'.toString()">
-            and IM.STATUS = '2' and IM.TYPE = '1'
+            and IM.STATUS = '1' and IM.TYPE = '1'
           </when>
           <!-- 已建模-->
           <when test="isBuilded != null and isBuilded == '2'.toString()">
-            and IM.STATUS = '1' and IM.TYPE = '1'
-          </when>
-          <!-- 实时 -->
-          <when test="isBuilded != null and isBuilded == '3'.toString()">
-            and IM.TYPE = '2'
+            and ((IM.STATUS = '2' and IM.TYPE = '1') or IM.TYPE = '2')
           </when>
         </choose>
    <!-- </trim>-->
