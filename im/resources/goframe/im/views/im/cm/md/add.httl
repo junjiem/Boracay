@@ -23,7 +23,7 @@ ${extends("/goframe/function_layout.httl")}
 
                         <div id="dsId" class="nui-combobox" style="width:97%;" popupWidth="400" textField="name"
                              valueField="pkId" onvaluechanged="typeChanged" allowInput="true"
-                             url="${basePath}/com/ds/select?model=IM&imDsTypeDictId=IM_DS_TARGET_TYPE"
+                             url="${basePath}/com/ds/select?model=${model}&imDsTypeDictId=IM_DS_TARGET_TYPE"
                              dataField="data" name="dsId" multiSelect="false" required="true">
                             <div property="columns">
                                 <div header="名称" field="name"></div>
@@ -414,32 +414,21 @@ ${extends("/goframe/function_layout.httl")}
         if (!baseData) {
             return;
         }
-        var comPropertiesList = getComPropertiess();
-        if (!comPropertiesList) {
+        var colsData = getColsData();
+        if (!colsData) {
             return;
         }
-        var imModelMappings = getModelMappings();
-        if (!imModelMappings) {
+        var propsData = getPropsData();
+        if (!propsData) {
             return;
         }
-        var imModelFilterCols = getImModelFilterCols();
-        if (!imModelFilterCols) {
-            return;
-        }
-        //修改其删除状态
-        baseData.delFlg = "0";
-        //修改其对应的是非实时
-        baseData.type = srcSourceType;
-        baseData.status = "1";
         var saveData = {
-            "imModel": baseData,
-            "imModelMappings": imModelMappings,
-            "imModelFilterCols":imModelFilterCols,
-            "comPropertiesList":comPropertiesList
+            "imMetadata": baseData,
+            "imMetadataColList": colsData,
+            "comPropertiesList": propsData
         };
         return saveData;
     }
-
 
     /**
      * 获取基础数据
