@@ -348,7 +348,12 @@ ${extends("/goframe/function_layout.httl")}
             success: function (result) {
                 if (result.status == true) {
                     nui.alert(result.message);
-                    CloseWindow("success");
+                    var fromModel = "${fromModel}";
+                    if (fromModel == "true") {
+                        CloseWindow(result.data);
+                    } else {
+                        CloseWindow("success");
+                    }
                 } else {
                     nui.alert(result.message, "系统提示", function (action) {
                         if (action == "ok" || action == "close") {

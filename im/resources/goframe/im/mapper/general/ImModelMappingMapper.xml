@@ -43,10 +43,8 @@
   </select>
 
   <select id="selectByMid" parameterType="java.lang.String" resultMap="BaseResultMap" >
-    select IMM.PK_ID, IMM.MODEL_ID, IMM.SEQ, IMM.NAME, IMC.NAME COL_ID, IMM.NOTE,IMM.TYPE,IMM.LENGTH,IMM.DESCRIBE
+    select IMM.PK_ID, IMM.MODEL_ID, IMM.SEQ, IMM.NAME, IMM.NAME COL_ID, IMM.NOTE,IMM.TYPE,IMM.LENGTH,IMM.DESCRIBE
     from IM_MODEL_MAPPING IMM
-    left join IM_METADATA_COLUMN IMC
-    ON IMM.COL_ID = IMC.PK_ID
     where IMM.MODEL_ID = #{mid}
      ORDER BY IMM.SEQ
   </select>
