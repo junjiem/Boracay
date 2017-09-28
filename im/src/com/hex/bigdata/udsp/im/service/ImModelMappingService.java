@@ -19,7 +19,7 @@ public class ImModelMappingService {
     public List<ImModelMapping> getImModelMappingsByMid(String mid) {
 
 
-        return imModelMappingMapper.selectList(mid);
+        return imModelMappingMapper.selectByModelId(mid);
     }
 
 }
