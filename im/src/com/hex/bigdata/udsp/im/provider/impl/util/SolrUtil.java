@@ -158,17 +158,30 @@ public class SolrUtil {
             uploadSolrConfig(solrUrl, collectionName, metadataCols);
             // 创建Collection
             String response = "";
+            String message = "创建SOLR表失败，请检查SOLR配置！";
+            boolean status = false;
             for (String solrServer : getSolrServerStrings(solrServers)) {
                 String url = getSolrAdminCollectionsUrl(solrServer);
                 String param = "action=CREATE" + "&name=" + collectionName + "&replicationFactor=" + replicas +
                         "&numShards=" + shards + "&maxShardsPerNode=" + maxShardsPerNode +
                         "&collection.configName=" + collectionName;
-                response = sendGet(url, param);
+                try {
+                    response = sendGet(url, param);
+                } catch (Exception e) {
+                    continue;
+                }
                 if (StringUtils.isEmpty(response)) {
                     continue;
                 } else {
+                    message = "创建SOLR表成功！";
+                    status = true;
                     break;
                 }
+            }
+            // SOLR建表不成功，删除 SOLR配置
+            if(!status){
+                deleteZnode(solrUrl, collectionName); // 删除Config
+                throw new RuntimeException(message);
             }
         }
         return true;
@@ -462,8 +475,9 @@ public class SolrUtil {
                 result += line;
             }
         } catch (Exception e) {
-            logger.warn("发送GET请求出现异常！" + e);
+            logger.error("发送GET请求出现异常！" + e);
             e.printStackTrace();
+            throw new RuntimeException(e);
         }
         // 使用finally块来关闭输入流
         finally {

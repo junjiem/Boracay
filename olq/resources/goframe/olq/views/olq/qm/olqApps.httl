@@ -220,7 +220,7 @@ ${extends("/goframe/function_layout.httl")}
             url: "${basePath}/http/inner/consume",
             data: json,
             cache: false,
-            async: false,
+            // async: false, // 显示禁用和等待条，这里必须是async:true
             type: 'POST',
             contentType: 'application/json',
             success: function (response) {
@@ -254,7 +254,7 @@ ${extends("/goframe/function_layout.httl")}
                 intGridColumns(columns);
                 grid1.setData(records);
                 grid1.unmask();
-                nui.alert("加载成功!");
+                //nui.alert("加载成功!");
             }
         });
     }

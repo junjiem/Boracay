@@ -82,7 +82,7 @@ ${extends("/goframe/function_layout.httl")}
                 <div id="datagrid1" class="nui-datagrid" style="width:100%; height: 100%;" dataField="data"
                      url="${basePath}/im/md/col/select/${pkId}"
                      idField="pkId" multiSelect="true" allowCellEdit="false" allowCellSelect="false" sortMode="client"
-                     showPager="false" editNextOnEnterKey="false" editNextRowCell="false" onselectionchanged="selected1">
+                     showPager="false" editNextOnEnterKey="false" editNextRowCell="false">
                     <div property="columns">
                         <div type="checkcolumn" headerAlign="center" width="5"></div>
                         <div type="indexcolumn" headerAlign="center" width="8">位置</div>
@@ -146,7 +146,7 @@ ${extends("/goframe/function_layout.httl")}
                 <div id="datagrid2" class="nui-datagrid" style="width:100%; height: 100%;"
                      url="${basePath}/com/props/select/${pkId}"
                      idField="pkId" multiSelect="true" allowCellEdit="false" allowCellSelect="false" sortMode="client"
-                     showPager="false" editNextOnEnterKey="false" editNextRowCell="false" onselectionchanged="selected">
+                     showPager="false" editNextOnEnterKey="false" editNextRowCell="false">
                     <div property="columns">
                         <div type="checkcolumn" headerAlign="center" width="5"></div>
                         <div type="indexcolumn" headerAlign="center" width="8">位置</div>

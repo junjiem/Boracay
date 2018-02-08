@@ -187,7 +187,6 @@ ${extends("/goframe/function_layout.httl")}
     var grid1;
     var grid2;
     var originTbName;
-    var originName;
     var dsIdObject;
 
     /**
@@ -336,10 +335,10 @@ ${extends("/goframe/function_layout.httl")}
             return;
         }
         var json = nui.encode(date);
-        // --发送信息--
-        form1.loading("正在保存中,请稍等...");
         //禁用保存按钮
         nui.get("saveButton").disable();
+        // --发送信息--
+        form1.loading("正在保存中,请稍等...");
         $.ajax({
             url: "${basePath}/im/md/insert",
             type: 'POST',
@@ -373,7 +372,7 @@ ${extends("/goframe/function_layout.httl")}
     function saveAndCreate() {
         var saveData = getSaveData();
         if (!saveData) return;
-        json = nui.encode(saveData);
+        var json = nui.encode(saveData);
         //禁用保存按钮
         nui.get("saveAndCreateButton").disable();
         // --发送信息--
@@ -383,7 +382,7 @@ ${extends("/goframe/function_layout.httl")}
             type: 'POST',
             data: json,
             cache: false,
-            async: false,
+            //async: false, // 显示禁用和等待条，这里必须是async:true
             contentType: 'application/json',
             success: function (result) {
                 if (result.status == true) {

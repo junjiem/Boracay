@@ -195,6 +195,7 @@ ${extends("/goframe/function_layout.httl")}
     var grid2;
     var originName;
     var originTbName;
+    var dsIdObject;
 
     /**
      * 按需加载资源文件
@@ -204,6 +205,7 @@ ${extends("/goframe/function_layout.httl")}
         form1 = new nui.Form("#form1");
         grid1 = nui.get("datagrid1");
         grid2 = nui.get("datagrid2");
+        dsIdObject = nui.get("dsId");
         setData();
         grid1.load();
         grid2.load();
@@ -386,7 +388,7 @@ ${extends("/goframe/function_layout.httl")}
     function saveAndCreate() {
         var saveData = getSaveData();
         if (!saveData) return;
-        json = nui.encode(saveData);
+        var json = nui.encode(saveData);
         //禁用保存按钮
         nui.get("saveAndCreateButton").disable();
         // --发送信息--
@@ -396,7 +398,7 @@ ${extends("/goframe/function_layout.httl")}
             type: 'POST',
             data: json,
             cache: false,
-            async: false,
+            //async: false, // 显示禁用和等待条，这里必须是async:true
             contentType: 'application/json',
             success: function (result) {
                 if (result.status == true) {
