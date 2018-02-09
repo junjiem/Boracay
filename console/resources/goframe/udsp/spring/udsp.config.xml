@@ -62,13 +62,20 @@
             <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
         </property>
         <property name="valueSerializer">
-            <bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer"></bean>
+            <!-- 使用Java自带的序列化机制将对象序列化为一个字符串，存储较大，速度最快 -->
+            <!--<bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer"></bean>-->
+            <!-- 将对象序列化为xml字符串，存储最大，速度最慢 -->
+            <!--<bean class="org.springframework.data.redis.serializer.OxmSerializer"></bean>-->
+            <!-- 将对象序列化为json字符串，存储最小，速度较快（推荐） -->
+            <bean class="org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer"></bean>
         </property>
         <property name="hashKeySerializer">
             <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
         </property>
         <property name="hashValueSerializer">
-            <bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer"></bean>
+            <!--<bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer"></bean>-->
+            <!--<bean class="org.springframework.data.redis.serializer.OxmSerializer"></bean>-->
+            <bean class="org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer"></bean>
         </property>
     </bean>
 

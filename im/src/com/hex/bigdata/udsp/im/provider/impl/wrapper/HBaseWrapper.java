@@ -188,11 +188,11 @@ public abstract class HBaseWrapper extends Wrapper implements BatchTargetProvide
                 if (len == 19) {
                     sql += "SUBSTR(REGEXP_REPLACE(CAST(" + name + " AS STRING),'/','-'),1,19)";
                 } else if (len == 17) {
-                    sql += "SUBSTR(REGEXP_REPLACE(REGEXP_REPLACE(CAST(" + name + " AS STRING),'/','-'),'-',''),1,17))";
+                    sql += "SUBSTR(REGEXP_REPLACE(REGEXP_REPLACE(CAST(" + name + " AS STRING),'/','-'),'-',''),1,17)";
                 } else if (len == 10) {
                     sql += "SUBSTR(REGEXP_REPLACE(CAST(" + name + " AS STRING),'/','-'),1,10)";
                 } else if (len == 8) {
-                    sql += "SUBSTR(REGEXP_REPLACE(REGEXP_REPLACE(CAST(" + name + " AS STRING),'/','-'),'-',''),1,8))";
+                    sql += "SUBSTR(REGEXP_REPLACE(REGEXP_REPLACE(CAST(" + name + " AS STRING),'/','-'),'-',''),1,8)";
                 } else {
                     sql += "REGEXP_REPLACE(CAST(" + name + " AS STRING),'/','-')";
                 }
