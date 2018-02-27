@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Created by JunjieM on 2017-9-21.
+ * 批量任务的信息
  */
 public class BatchInfo implements Serializable {
     private String id; // 主键

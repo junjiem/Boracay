@@ -11,7 +11,6 @@ import com.hex.bigdata.udsp.im.provider.impl.util.HiveSqlUtil;
 import com.hex.bigdata.udsp.im.provider.impl.util.JdbcUtil;
 import com.hex.bigdata.udsp.im.provider.impl.util.SolrUtil;
 import com.hex.bigdata.udsp.im.provider.impl.util.model.TblProperty;
-import com.hex.bigdata.udsp.im.provider.impl.util.model.ValueColumn;
 import com.hex.bigdata.udsp.im.provider.impl.util.model.WhereProperty;
 import com.hex.bigdata.udsp.im.provider.impl.wrapper.SolrWrapper;
 import com.hex.bigdata.udsp.im.provider.model.Metadata;
@@ -26,9 +25,7 @@ import org.springframework.stereotype.Component;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by JunjieM on 2017-9-5.
@@ -36,7 +33,6 @@ import java.util.Map;
 @Component("com.hex.bigdata.udsp.im.provider.impl.SolrProvider")
 public class SolrProvider extends SolrWrapper {
     private static Logger logger = LogManager.getLogger(SolrProvider.class);
-    private static final String HIVE_ENGINE_STORAGE_HANDLER_CLASS = "com.hex.hive.solr.SolrStorageHandler";
 
     public List<MetadataCol> getColumns(String collectionName, String solrServers) {
         if (StringUtils.isEmpty(collectionName) || StringUtils.isEmpty(solrServers)) {
@@ -106,121 +102,6 @@ public class SolrProvider extends SolrWrapper {
         SolrModel solrModel = new SolrModel(model.getProperties(), model.getSourceDatasource());
         String collectionName = solrModel.getCollectionName();
         return getColumns(collectionName, solrServers);
-    }
-
-    /**
-     * 增量插入数据
-     *
-     * @param metadata
-     * @param modelMappings
-     * @param valueColumns
-     * @throws Exception
-     */
-    @Override
-    protected void insertInto(Metadata metadata, List<ModelMapping> modelMappings, List<ValueColumn> valueColumns) throws Exception {
-        checkModelMappings(modelMappings);
-        SolrDatasource solrDatasource = new SolrDatasource(metadata.getDatasource());
-        Map<String, String> map = new HashMap<>();
-        for (ValueColumn column : valueColumns) {
-            map.put(column.getColName(), column.getValue());
-        }
-        SolrUtil.addDocument(solrDatasource, metadata.getTbName(), map);
-    }
-
-    /**
-     * 更新数据或者增量插入数据
-     *
-     * @param metadata
-     * @param modelMappings
-     * @param valueColumns
-     * @param whereProperties
-     * @throws Exception
-     */
-    @Override
-    protected void updateInsert(Metadata metadata, List<ModelMapping> modelMappings, List<ValueColumn> valueColumns, List<WhereProperty> whereProperties) throws Exception {
-        checkModelMappings(modelMappings);
-        SolrDatasource solrDatasource = new SolrDatasource(metadata.getDatasource());
-        String tableName = metadata.getTbName();
-        String idName = getIdName(modelMappings);
-        List<Map<String, String>> list = SolrUtil.search(solrDatasource, tableName, whereProperties);
-        // 查询到条件数据，则进行更新，否则增量插入
-        if (list != null && list.size() != 0) {
-            update(solrDatasource, tableName, idName, list, valueColumns);
-        } else {
-            Map<String, String> map = new HashMap<>();
-            for (ValueColumn column : valueColumns) {
-                map.put(column.getColName(), column.getValue());
-            }
-            SolrUtil.addDocument(solrDatasource, metadata.getTbName(), map);
-        }
-    }
-
-    /**
-     * 更新数据
-     *
-     * @param metadata
-     * @param modelMappings
-     * @param valueColumns
-     * @param whereProperties
-     * @throws Exception
-     */
-    @Override
-    protected void matchingUpdate(Metadata metadata, List<ModelMapping> modelMappings, List<ValueColumn> valueColumns, List<WhereProperty> whereProperties) throws Exception {
-        checkModelMappings(modelMappings);
-        SolrDatasource solrDatasource = new SolrDatasource(metadata.getDatasource());
-        String tableName = metadata.getTbName();
-        String idName = getIdName(modelMappings);
-        List<Map<String, String>> list = SolrUtil.search(solrDatasource, tableName, whereProperties);
-        if (list != null && list.size() != 0) {
-            update(solrDatasource, tableName, idName, list, valueColumns);
-        }
-    }
-
-    private void checkModelMappings(List<ModelMapping> modelMappings) {
-        boolean flg = false;
-        for (ModelMapping modelMapping : modelMappings) {
-            if (modelMapping.getMetadataCol().isPrimary()) {
-                flg = true;
-                break;
-            }
-        }
-        if (!flg) {
-            throw new IllegalArgumentException("【映射字段】的目标字段必须要有一个是主键字段！");
-        }
-    }
-
-    @Override
-    protected List<String> getSelectColumns(List<ModelMapping> modelMappings, Metadata metadata) {
-        if (modelMappings == null || modelMappings.size() == 0)
-            return null;
-        List<String> selectColumns = new ArrayList<>();
-        for (ModelMapping mapping : modelMappings)
-            selectColumns.add(mapping.getName());
-        return selectColumns;
-    }
-
-    @Override
-    protected void emptyDatas(Metadata metadata) throws Exception {
-        SolrDatasource solrDatasource = new SolrDatasource(metadata.getDatasource());
-        String collectionName = metadata.getTbName();
-        SolrUtil.deleteAll(solrDatasource, collectionName);
-    }
-
-    @Override
-    public void createSourceEngineSchema(Model model) throws Exception {
-        HiveDatasource eHiveDs = new HiveDatasource(model.getEngineDatasource());
-        String id = model.getId();
-        SolrModel solrModel = new SolrModel(model);
-        String collectionName = solrModel.getCollectionName();
-        String engineSchemaName = getSourceTableName(id);
-        SolrDatasource solrDs = new SolrDatasource(model.getSourceDatasource());
-        List<ModelMapping> modelMappings = model.getModelMappings();
-        String pkName = getSourcePrimaryKey(modelMappings);
-        List<TblProperty> tblProperties = getSourceTblProperties(solrDs, pkName, collectionName, modelMappings, "*:*");
-        String sql = HiveSqlUtil.createStorageHandlerTable(true, true, engineSchemaName,
-                getSourceColumns(modelMappings), "源的Hive引擎表", null,
-                HIVE_ENGINE_STORAGE_HANDLER_CLASS, null, tblProperties);
-        JdbcUtil.createEngineSchema(eHiveDs, HIVE_ENGINE_DATABASE_NAME, sql);
     }
 
     @Override

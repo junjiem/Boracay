@@ -6,34 +6,19 @@ import com.hex.bigdata.udsp.common.util.ExceptionUtil;
 import com.hex.bigdata.udsp.common.util.JSONUtil;
 import com.hex.bigdata.udsp.im.provider.BatchTargetProvider;
 import com.hex.bigdata.udsp.im.provider.RealtimeTargetProvider;
-import com.hex.bigdata.udsp.im.provider.impl.factory.HBaseAdminPoolFactory;
-import com.hex.bigdata.udsp.im.provider.impl.factory.HBaseConnectionPoolFactory;
 import com.hex.bigdata.udsp.im.provider.impl.model.datasource.HBaseDatasource;
 import com.hex.bigdata.udsp.im.provider.impl.model.metadata.HBaseMetadata;
 import com.hex.bigdata.udsp.im.provider.impl.util.HBaseUtil;
 import com.hex.bigdata.udsp.im.provider.impl.util.model.*;
 import com.hex.bigdata.udsp.im.provider.model.Metadata;
 import com.hex.bigdata.udsp.im.provider.model.MetadataCol;
-import com.hex.bigdata.udsp.im.provider.model.Model;
 import com.hex.bigdata.udsp.im.provider.model.ModelMapping;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.pool.impl.GenericObjectPool;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.io.compress.Compression;
-import org.apache.hadoop.hbase.io.encoding.DataBlockEncoding;
-import org.apache.hadoop.hbase.regionserver.BloomType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.util.*;
 
 /**
@@ -263,6 +248,16 @@ public abstract class HBaseWrapper extends Wrapper implements BatchTargetProvide
         return sql;
     }
 
+    /**
+     * 增量插入
+     * <p>
+     * 注：没有相同主键时数据插入，有相同主键时数据更新
+     *
+     * @param metadata
+     * @param modelMappings
+     * @param valueColumns
+     * @throws Exception
+     */
     @Override
     protected void insertInto(Metadata metadata, List<ModelMapping> modelMappings, List<ValueColumn> valueColumns) throws Exception {
         checkModelMappings(modelMappings);
@@ -480,13 +475,41 @@ public abstract class HBaseWrapper extends Wrapper implements BatchTargetProvide
         return StringUtils.join(list, CharUtil.ascii2Char(seprator));
     }
 
+    /**
+     * 更新、插入
+     * <p>
+     * 注：没有相同主键时数据插入，有相同主键时数据更新
+     *
+     * @param metadata
+     * @param modelMappings
+     * @param valueColumns
+     * @param whereProperties
+     * @throws Exception
+     */
     @Override
     protected void updateInsert(Metadata metadata, List<ModelMapping> modelMappings, List<ValueColumn> valueColumns, List<WhereProperty> whereProperties) throws Exception {
         insertInto(metadata, modelMappings, valueColumns);
     }
 
+    /**
+     * 匹配更新
+     * <p>
+     * 注：没有相同主键时数据插入，有相同主键时数据更新
+     *
+     * @param metadata
+     * @param modelMappings
+     * @param valueColumns
+     * @param whereProperties
+     * @throws Exception
+     */
     @Override
     protected void matchingUpdate(Metadata metadata, List<ModelMapping> modelMappings, List<ValueColumn> valueColumns, List<WhereProperty> whereProperties) throws Exception {
         insertInto(metadata, modelMappings, valueColumns);
+    }
+
+    @Override
+    protected void emptyDatas(Metadata metadata) throws Exception {
+        HBaseMetadata hBaseMetadata = new HBaseMetadata(metadata);
+        HBaseUtil.emptyHTable(hBaseMetadata);
     }
 }

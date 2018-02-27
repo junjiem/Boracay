@@ -1,7 +1,5 @@
 package com.hex.bigdata.udsp.common.provider.model;
 
-import com.hex.goframe.util.Util;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,14 +24,6 @@ public class Base implements Serializable {
 
     public Base(Map<String, Property> propertyMap) {
         setPropertyMap(propertyMap);
-    }
-
-    public String getId() {
-        StringBuffer sb = new StringBuffer();
-        for (Property property : properties) {
-            sb.append(property.getName() + "=" + property.getValue() + "\n");
-        }
-        return Util.MD5(sb.toString());
     }
 
     public Property getProperty(String key) {

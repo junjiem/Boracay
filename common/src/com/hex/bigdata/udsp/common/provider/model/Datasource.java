@@ -3,6 +3,7 @@ package com.hex.bigdata.udsp.common.provider.model;
 import com.hex.bigdata.udsp.common.model.ComDatasource;
 import com.hex.bigdata.udsp.common.model.ComProperties;
 import com.hex.bigdata.udsp.common.util.PropertyUtil;
+import com.hex.goframe.util.Util;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
@@ -14,6 +15,8 @@ import java.util.Map;
  * Created by junjiem on 2017-3-2.
  */
 public class Datasource extends Base implements Serializable {
+    private String id; // Redis使用Jackson进行序列化和反序列化时对于get开头的方法必须要有对应的变量
+
     private String name;
 
     private String describe;
@@ -23,6 +26,10 @@ public class Datasource extends Base implements Serializable {
     private String note;
 
     private String implClass;
+
+    public Datasource() {
+        // Redis使用Jackson进行序列化和反序列化时必须要有空构造函数
+    }
 
     public Datasource(List<Property> properties) {
         super(properties);
@@ -53,6 +60,14 @@ public class Datasource extends Base implements Serializable {
         for (Property property : properties) {
             propertyMap.put(property.getName(), property);
         }
+    }
+
+    public String getId() {
+        StringBuffer sb = new StringBuffer();
+        for (Property property : properties) {
+            sb.append(property.getName() + "=" + property.getValue() + "\n");
+        }
+        return Util.MD5(sb.toString());
     }
 
     public String getImplClass() {

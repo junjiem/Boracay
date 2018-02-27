@@ -158,8 +158,7 @@ public class ImMetadataService extends BaseService {
         metadata.setType(MetadataType.EXTERNAL);
         metadata.setTbName(tbName);
         metadata.setDatasource(datasource);
-        List<MetadataCol> list = imProviderService.getCloumnInfo(metadata);
-        return list;
+        return imProviderService.getCloumnInfo(metadata);
     }
 
     public boolean checkSchema(String dsId, String tbName) throws Exception {

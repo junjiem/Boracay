@@ -56,23 +56,23 @@ ${extends("/goframe/function_layout.httl")}
                     <th class="nui-form-label"><label for="updateMode">更新策略：</label></th>
                     <td>
                         <input style="width:100%;" id="updateMode" name="updateMode" class="nui-dictcombobox" textField="dictName" valueField="dictId"
-                               dictTypeId="IM_MODEL_UPDATE_TYPE" value="3" multiSelect="false" required="false" onvaluechanged="updateModeChange"/>
+                               dictTypeId="IM_MODEL_UPDATE_TYPE" value="3" multiSelect="false" required="true" onvaluechanged="updateModeChange"/>
                     </td>
                     <th id="updateKey1" class="nui-form-label"><label for="updateKey">更新主键：</label></th>
                     <td id="updateKey2">
-                        <input style="width:100%;" id="updateKey" name="updateKey" class="nui-buttonedit" onbuttonclick="showTargetCols" required="false"/>
+                        <input style="width:100%;" id="updateKey" name="updateKey" class="nui-buttonedit" onbuttonclick="showTargetCols" allowInput="false" required="true"/>
                     </td>
                 </tr>
                 <tr id="buildType" style="display:none">
                     <th class="nui-form-label"><label for="buildMode">构建策略：</label></th>
                     <td>
                         <input id="buildMode" name="buildMode" class="nui-dictcombobox" textField="dictName" valueField="dictId" style="width:100%;"
-                               dictTypeId="IM_MODEL_BUILD_TYPE" multiSelect="false"  required="false"/>
+                               dictTypeId="IM_MODEL_BUILD_TYPE" multiSelect="false"  required="true"/>
                     </td>
                     <th class="nui-form-label"><label for="buildMode">引擎数据源：</label></th>
                     <td>
                         <div id="engineDsId" class="nui-combobox" style="width:100%;"  popupWidth="400" textField="name" valueField="pkId"
-                             url="${basePath}/com/ds/selectEngineDs" dataField="data" name="engineDsId" allowInput="true"  required="false">
+                             url="${basePath}/com/ds/selectEngineDs" dataField="data" name="engineDsId" allowInput="true"  required="true">
                             <div property="columns">
                                 <div header="名称" field="name"></div>
                                 <div header="说明" field="describe"></div>
@@ -179,7 +179,7 @@ ${extends("/goframe/function_layout.httl")}
                     <!--<div field="length" headerAlign="center" allowSort="true" width="20">长度-->
                     <!--<input property="editor" class="nui-textbox" vtype="maxLength:4000" readonly="true"/>-->
                     <!--</div>-->
-                    <div field="describe" headerAlign="center" allowSort="true" width="25">描述
+                    <div field="describe" headerAlign="center" allowSort="true" width="25">描述<font color="#FF0000">（必填）</font>
                         <input property="editor" class="nui-textbox" vtype="maxLength:4000"/>
                     </div>
                     <div type="checkboxcolumn" field="primary" trueValue="0" falseValue="1" width="8"

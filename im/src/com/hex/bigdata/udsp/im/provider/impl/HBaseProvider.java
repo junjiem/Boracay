@@ -17,7 +17,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -26,9 +25,6 @@ import java.util.List;
 @Component("com.hex.bigdata.udsp.im.provider.impl.HBaseProvider")
 public class HBaseProvider extends HBaseWrapper {
     private static Logger logger = LogManager.getLogger(HBaseProvider.class);
-    private static final String rkSep = "|";
-    private static final String startStr = "";
-    private static final String stopStr = "|";
 
     @Override
     public List<MetadataCol> columnInfo(Metadata metadata) {
@@ -87,11 +83,5 @@ public class HBaseProvider extends HBaseWrapper {
             HBaseUtil.release(hBaseDatasource, conn);
         }
         return canConnection;
-    }
-
-    @Override
-    protected void emptyDatas(Metadata metadata) throws Exception {
-        HBaseMetadata hBaseMetadata = new HBaseMetadata(metadata);
-        HBaseUtil.emptyHTable(hBaseMetadata);
     }
 }

@@ -13,11 +13,21 @@ import java.util.Map;
  * Created by JunjieM on 2017-9-15.
  */
 public class MqModel extends Model implements Serializable {
+    // Redis使用Jackson进行序列化和反序列化时对于get开头的方法必须要有对应的变量
+    private String topic;
+    private String consumerTimeoutMs;
+    private String consumerCronExpression;
+
     public MqModel() {
+        // Redis使用Jackson进行序列化和反序列化时必须要有空构造函数
     }
 
     public MqModel(Model model) {
         super(model);
+    }
+
+    public MqModel(List<Property> properties, Datasource srcDatasource) {
+        super(properties, srcDatasource);
     }
 
     public String getTopic() {
@@ -25,10 +35,6 @@ public class MqModel extends Model implements Serializable {
         if (StringUtils.isBlank(value))
             throw new IllegalArgumentException("topic不能为空");
         return value;
-    }
-
-    public MqModel(List<Property> properties, Datasource srcDatasource) {
-        super(properties, srcDatasource);
     }
 
     public String getConsumerTimeoutMs() {

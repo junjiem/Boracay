@@ -13,12 +13,13 @@ ${extends("/goframe/function_layout.httl")}
                          url="${basePath}/im/md/col/select/${targetMdId}">
                         <div property="columns">
                             <div type="checkcolumn"></div>
-                            <!--
-                            <div field="name" with="180" headerAlign="center" allowSort="true">字段名称</div>
-                            -->
-                            <div field="name" with="40%" headerAlign="center" allowSort="true">名称</div>
-                            <div field="type" with="20%" headerAlign="center" allowSort="true">类型</div>
-                            <div field="describe" with="40%" headerAlign="center" allowSort="true">描述</div>
+                            <div field="name" headerAlign="center" allowSort="true">名称</div>
+                            <div type="checkboxcolumn" field="primary" trueValue="0" falseValue="1"
+                                 headerAlign="center" allowSort="true">主键</div>
+                            <div type="checkboxcolumn" field="indexed" trueValue="0" falseValue="1"
+                                 headerAlign="center" allowSort="true">索引</div>
+                            <div field="type" headerAlign="center" allowSort="true">类型</div>
+                            <div field="describe" headerAlign="center" allowSort="true">描述</div>
                         </div>
                     </div>
                 </td>
@@ -33,7 +34,7 @@ ${extends("/goframe/function_layout.httl")}
                     <div id="selectedList" class="nui-listbox" style="width:250px;height:280px;"
                          multiSelect="true" showCheckBox="true" idField="pkId" >
                         <div property="columns">
-                            <div field="name" with="180" headerAlign="center" allowSort="true">名称</div>
+                            <div field="name" headerAlign="center" allowSort="true">名称</div>
                         </div>
                     </div>
                 </td>

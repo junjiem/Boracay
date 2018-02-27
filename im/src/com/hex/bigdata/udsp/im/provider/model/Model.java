@@ -79,7 +79,6 @@ public class Model extends Base implements Serializable {
         this.modelFilterCols = model.getModelFilterCols();
     }
 
-    @Override
     public String getId() {
         if (StringUtils.isBlank(id))
             throw new IllegalArgumentException("id不能为空");
