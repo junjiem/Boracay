@@ -50,8 +50,7 @@ public class OlqProviderService extends BaseService {
         Datasource datasource = getDatasource(dsId);
         OlqRequest request = new OlqRequest(datasource, sql, page);
         Provider provider = getProviderImpl(datasource);
-        OlqResponse response = provider.execute(consumeId, request);
-        return response;
+        return provider.execute(consumeId, request);
     }
 
     /**
@@ -66,8 +65,7 @@ public class OlqProviderService extends BaseService {
         Datasource datasource = getDatasource(dsId);
         OlqRequest request = new OlqRequest(datasource, sql, page);
         Provider provider = getProviderImpl(datasource);
-        OlqResponseFetch response = provider.executeFetch(consumeId, request);
-        return response;
+        return provider.executeFetch(consumeId, request);
     }
 
     /**
@@ -79,8 +77,7 @@ public class OlqProviderService extends BaseService {
     private Datasource getDatasource(String dsId) {
         ComDatasource comDatasource = comDatasourceService.select(dsId);
         List<ComProperties> comPropertiesList = comPropertiesService.selectList(dsId);
-        Datasource datasource = new Datasource(comDatasource, comPropertiesList);
-        return datasource;
+        return new Datasource(comDatasource, comPropertiesList);
     }
 
     /**

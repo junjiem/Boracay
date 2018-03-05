@@ -208,7 +208,7 @@ ${extends("/goframe/function_layout.httl")}
             "type": "sync",
             "entity": "start",
             "sql": data.sql,
-            "page":data.page
+            "page": data.page
         });
         $.ajax({
             url: "${basePath}/http/inner/consume",
@@ -225,7 +225,7 @@ ${extends("/goframe/function_layout.httl")}
                 }
                 var records = response.records;
                 //console.warn(records);
-                var columns = new Array();
+                var columns = [];
                 columns[0] = {
                     header: "序号",
                     type: "indexColumn",
@@ -236,7 +236,7 @@ ${extends("/goframe/function_layout.httl")}
                 if (records && records.length >= 1) {
                     for (var key in records[0]) {
                         columns[i] = {
-                            field: key,
+                            field: tranKey(key),
                             header: key,
                             headerAlign: "center",
                             allowSort: true
@@ -246,19 +246,41 @@ ${extends("/goframe/function_layout.httl")}
                 }
                 //console.warn(columns);
                 intGridColumns(columns);
-                grid1.setData(records);
+                grid1.setData(tranRecords(records));
                 grid1.unmask();
                 //nui.alert("加载成功!");
             }
         });
     }
 
+    function tranRecords(records) {
+        var newRecords = [];
+        if (records && records.length >= 1) {
+            for (var i = 0; i < records.length; i++) {
+                var newRecord = {};
+                for (var key in records[0]) {
+                    newRecord[tranKey(key)] = records[i][key];
+                }
+                newRecords[i] = newRecord;
+            }
+        }
+        return newRecords;
+    }
+
+    function tranKey(key) {
+        return key.replaceAll("\\.","").replaceAll("'","").replaceAll(" ","");
+    }
+
+    String.prototype.replaceAll = function (s1, s2) {
+        return this.replace(new RegExp(s1, "gm"), s2);
+    };
+
     /**
      * 初始化datagrid columns
      */
     function intGridColumns(colsData) {
         var baseHtml = "<div id='datagrid1' class='nui-datagrid' style='width:100%;height:100%;'" +
-                "allowResize='false' showPager='false' multiSelect='true' allowCellSelect='false' sortMode='client' >";
+            "allowResize='false' showPager='false' multiSelect='true' allowCellSelect='false' sortMode='client' >";
         baseHtml += "<div property='columns'>";
         $.each(colsData, function (_index, record) {
             if ("indexColumn" == record.type && "序号" == record.header) {
@@ -333,7 +355,7 @@ ${extends("/goframe/function_layout.httl")}
         });
     }
 
-    function onFormReset(){
+    function onFormReset() {
         $("#sql").val("");
         nui.get("dsId").setValue("");
     }

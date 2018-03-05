@@ -190,17 +190,13 @@ public abstract class JdbcProvider implements Provider {
 
     private List<Map<String, String>> getRecords(ResultSet rs, int maxNum) throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
-        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        Map<String, String> map = null;
+        List<Map<String, String>> list = new ArrayList<>();
+        LinkedHashMap<String, String> map = null;
         int count = 0;
         while (rs.next()) {
-            map = new LinkedHashMap<String, String>();
+            map = new LinkedHashMap<>();
             for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                //map.put(rsmd.getColumnName(i), rs.getString(i));
-                String columnName = rsmd.getColumnLabel(i);
-                int index = columnName.indexOf(".");
-                columnName = (index == 1 ? columnName : columnName.substring(index + 1));
-                map.put(columnName, rs.getString(i) == null ? "" : JSONUtil.encode(rs.getString(i)));
+                map.put(rsmd.getColumnLabel(i), rs.getString(i) == null ? "" : JSONUtil.encode(rs.getString(i)));
             }
             list.add(map);
             count++;
@@ -215,7 +211,7 @@ public abstract class JdbcProvider implements Provider {
         ResultSetMetaData rsmd = rs.getMetaData();
         LinkedHashMap<String, String> columnMap = new LinkedHashMap<>();
         for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-            columnMap.put(rsmd.getColumnName(i), rsmd.getColumnTypeName(i));
+            columnMap.put(rsmd.getColumnLabel(i), rsmd.getColumnTypeName(i));
         }
         return columnMap;
     }

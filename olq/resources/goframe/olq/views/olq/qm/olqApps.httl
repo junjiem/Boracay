@@ -242,7 +242,7 @@ ${extends("/goframe/function_layout.httl")}
                 if (records && records.length >= 1) {
                     for (var key in records[0]) {
                         columns[i] = {
-                            field: key,
+                            field: tranKey(key),
                             header: key,
                             headerAlign: "center",
                             allowSort: true
@@ -252,12 +252,34 @@ ${extends("/goframe/function_layout.httl")}
                 }
                 //console.warn(columns);
                 intGridColumns(columns);
-                grid1.setData(records);
+                grid1.setData(tranRecords(records));
                 grid1.unmask();
                 //nui.alert("加载成功!");
             }
         });
     }
+
+    function tranRecords(records) {
+        var newRecords = [];
+        if (records && records.length >= 1) {
+            for (var i = 0; i < records.length; i++) {
+                var newRecord = {};
+                for (var key in records[0]) {
+                    newRecord[tranKey(key)] = records[i][key];
+                }
+                newRecords[i] = newRecord;
+            }
+        }
+        return newRecords;
+    }
+
+    function tranKey(key) {
+        return key.replaceAll("\\.","").replaceAll("'","").replaceAll(" ","");
+    }
+
+    String.prototype.replaceAll = function (s1, s2) {
+        return this.replace(new RegExp(s1, "gm"), s2);
+    };
 
     /**
      * 初始化datagrid columns

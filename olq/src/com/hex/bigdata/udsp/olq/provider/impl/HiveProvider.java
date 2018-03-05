@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  * Created by junjiem on 2017-2-15.
  */
 @Component("com.hex.bigdata.udsp.olq.provider.impl.HiveProvider")
-public class HiveProvider  extends JdbcProvider {
+public class HiveProvider extends JdbcProvider {
     private static Logger logger = LogManager.getLogger(HiveProvider.class);
 
     protected OlqQuerySql getPageSql(String sql, Page page) {
