@@ -63,6 +63,62 @@ public class HttpUtils {
     public static PoolingHttpClientConnectionManager poolManager; // HTTP链接管理器
     public static CookieStore cookieStore = new BasicCookieStore();
 
+    public static int getConnectionRequestTimeout() {
+        return connectionRequestTimeout;
+    }
+
+    public static void setConnectionRequestTimeout(int connectionRequestTimeout) {
+        HttpUtils.connectionRequestTimeout = connectionRequestTimeout;
+    }
+
+    public static int getConnectTimeout() {
+        return connectTimeout;
+    }
+
+    public static void setConnectTimeout(int connectTimeout) {
+        HttpUtils.connectTimeout = connectTimeout;
+    }
+
+    public static int getSocketTimeout() {
+        return socketTimeout;
+    }
+
+    public static void setSocketTimeout(int socketTimeout) {
+        HttpUtils.socketTimeout = socketTimeout;
+    }
+
+    public static int getReadTimeout() {
+        return readTimeout;
+    }
+
+    public static void setReadTimeout(int readTimeout) {
+        HttpUtils.readTimeout = readTimeout;
+    }
+
+    public static int getWaitTimeout() {
+        return waitTimeout;
+    }
+
+    public static void setWaitTimeout(int waitTimeout) {
+        HttpUtils.waitTimeout = waitTimeout;
+    }
+
+    public static int getMaxTotalpool() {
+        return maxTotalpool;
+    }
+
+    public static void setMaxTotalpool(int maxTotalpool) {
+        HttpUtils.maxTotalpool = maxTotalpool;
+    }
+
+    public static int getMaxPerRoute() {
+        return maxPerRoute;
+    }
+
+    public static void setMaxPerRoute(int maxPerRoute) {
+        HttpUtils.maxPerRoute = maxPerRoute;
+    }
+
     static {
         try {
             // 信任对方所有证书

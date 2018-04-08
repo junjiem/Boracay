@@ -1,6 +1,7 @@
 package com.hex.bigdata.udsp.im.service;
 
 import com.hex.bigdata.udsp.common.constant.ComExcelEnums;
+import com.hex.bigdata.udsp.common.constant.DatasourceModel;
 import com.hex.bigdata.udsp.common.model.*;
 import com.hex.bigdata.udsp.common.provider.model.Datasource;
 import com.hex.bigdata.udsp.common.provider.model.Property;
@@ -250,7 +251,7 @@ public class ImMetadataService extends BaseService {
                     break;
                 }
                 //更改数据源
-                ComDatasource ds = comDatasourceService.selectByModelAndName("IM", imMetadata.getDsId());
+                ComDatasource ds = comDatasourceService.selectByModelAndName(DatasourceModel.IM.getValue(), imMetadata.getDsId());
                 if (ds == null) {
                     resultMap.put("status", "false");
                     resultMap.put("message", "第" + (i + 1) + "个数据源不存在！");

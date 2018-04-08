@@ -3,15 +3,20 @@ package com.hex.bigdata.udsp.rc.service;
 import com.hex.bigdata.udsp.common.constant.ComExcelEnums;
 import com.hex.bigdata.udsp.common.constant.CommonConstant;
 import com.hex.bigdata.udsp.common.constant.DatasourceModel;
+import com.hex.bigdata.udsp.common.model.ComDatasource;
 import com.hex.bigdata.udsp.common.model.ComUploadExcelContent;
 import com.hex.bigdata.udsp.common.service.ComDatasourceService;
 import com.hex.bigdata.udsp.common.util.CreateFileUtil;
 import com.hex.bigdata.udsp.common.util.ExcelCopyUtils;
 import com.hex.bigdata.udsp.common.util.ExcelUploadhelper;
+import com.hex.bigdata.udsp.im.model.ImModel;
 import com.hex.bigdata.udsp.im.service.ImModelService;
+import com.hex.bigdata.udsp.iq.model.IqApplication;
 import com.hex.bigdata.udsp.iq.service.IqApplicationService;
 import com.hex.bigdata.udsp.mm.dao.MmApplicationMapper;
+import com.hex.bigdata.udsp.mm.model.MmApplication;
 import com.hex.bigdata.udsp.mm.service.MmApplicationService;
+import com.hex.bigdata.udsp.olq.model.OlqApplication;
 import com.hex.bigdata.udsp.olq.service.OlqApplicationService;
 import com.hex.bigdata.udsp.rc.dao.RcServiceForAppTypeAndAppIdMapper;
 import com.hex.bigdata.udsp.rc.dao.RcServiceForServiceNameMapper;
@@ -22,6 +27,8 @@ import com.hex.bigdata.udsp.rc.model.RcUserService;
 import com.hex.bigdata.udsp.rc.util.RcConstant;
 import com.hex.bigdata.udsp.rts.dao.RtsConsumerMapper;
 import com.hex.bigdata.udsp.rts.dao.RtsProducerMapper;
+import com.hex.bigdata.udsp.rts.model.RtsConsumer;
+import com.hex.bigdata.udsp.rts.model.RtsProducer;
 import com.hex.bigdata.udsp.rts.service.RtsConsumerService;
 import com.hex.bigdata.udsp.rts.service.RtsProducerService;
 import com.hex.goframe.model.MessageResult;
@@ -95,7 +102,8 @@ public class RcServiceService {
     public String insert(RcService rcService) {
         String pkId = Util.uuid();
         rcService.setPkId(pkId);
-        rcService.setStatus(CommonConstant.SERVICE_STATUS_ENABLED);
+        if (StringUtils.isBlank(rcService.getStatus()))
+            rcService.setStatus(CommonConstant.SERVICE_STATUS_ENABLED);
         if (rcServiceMapper.insert(pkId, rcService)) {
             /*
             同时按照不同ID保存到内存中
@@ -409,7 +417,8 @@ public class RcServiceService {
             List<RcService> rcServices = (List<RcService>) uploadExcelModel.get("com.hex.bigdata.udsp.rc.model.RcService");
             String inseResult;
             String type;
-            String serviceName;
+            String appName;
+            String appId = null;
             int i = 1;
             for (RcService rcService : rcServices) {
                 if (rcServiceMapper.selectByName(rcService.getName()) != null) {
@@ -419,43 +428,69 @@ public class RcServiceService {
                 }
                 //跟新应用id
                 type = rcService.getType();
-                serviceName = rcService.getAppId();
-                if (RcConstant.UDSP_SERVICE_TYPE_IQ.equals(type)) {
-                    if (this.iqApplicationService.selectByName(serviceName) == null) {
+                appName = rcService.getAppId(); // 上传时将应用名称设置到了rcService的appId，所以这里的appId其实就是appName
+                /*
+                通过type和appName获取appId
+                 */
+                if (RcConstant.UDSP_SERVICE_TYPE_IQ.equals(type)) { // 交互查询
+                    IqApplication iqApplication = iqApplicationService.selectByName(appName);
+                    if (iqApplication == null) {
                         resultMap.put("status", "false");
                         resultMap.put("message", "第" + i + "个应用名称不存在！");
                         break;
                     }
-                    rcService.setAppId(this.iqApplicationService.selectByName(serviceName).getPkId());
-                } else if (RcConstant.UDSP_SERVICE_TYPE_OLQ.equals(type)) {
-                    if (comDatasourceService.selectByModelAndName("OLQ", serviceName) == null) {
+                    appId = iqApplication.getPkId();
+                } else if (RcConstant.UDSP_SERVICE_TYPE_OLQ.equals(type)) { // 联机查询
+                    ComDatasource comDatasource = comDatasourceService.selectByModelAndName("OLQ", appName);
+                    if (comDatasource == null) {
                         resultMap.put("status", "false");
                         resultMap.put("message", "第" + i + "个应用名称不存在！");
                         break;
                     }
-                    rcService.setAppId(comDatasourceService.selectByModelAndName("OLQ", serviceName).getPkId());
-                } else if (RcConstant.UDSP_SERVICE_TYPE_MM.equals(type)) {
-                    if (mmApplicationMapper.selectByName(serviceName) == null) {
+                    appId = comDatasource.getPkId();
+                } else if (RcConstant.UDSP_SERVICE_TYPE_MM.equals(type)) { // 模型管理
+                    MmApplication mmApplication = mmApplicationMapper.selectByName(appName);
+                    if (mmApplication == null) {
                         resultMap.put("status", "false");
                         resultMap.put("message", "第" + i + "个应用名称不存在！");
                         break;
                     }
-                    rcService.setAppId(mmApplicationMapper.selectByName(serviceName).getPkId());
-                } else if (RcConstant.UDSP_SERVICE_TYPE_RTS_PRODUCER.equals(type)) {
-                    if (rtsProducerMapper.selectByName(serviceName) == null) {
+                    appId = mmApplication.getPkId();
+                } else if (RcConstant.UDSP_SERVICE_TYPE_RTS_PRODUCER.equals(type)) { // 实时流-生产者
+                    RtsProducer rtsProducer = rtsProducerMapper.selectByName(appName);
+                    if (rtsProducer == null) {
                         resultMap.put("status", "false");
                         resultMap.put("message", "第" + i + "个应用名称不存在！");
                         break;
                     }
-                    rcService.setAppId(rtsProducerMapper.selectByName(serviceName).getPkId());
-                } else if (RcConstant.UDSP_SERVICE_TYPE_RTS_CONSUMER.equals(type)) {
-                    if (rtsConsumerMapper.selectByName(serviceName) == null) {
+                    appId = rtsProducer.getPkId();
+                } else if (RcConstant.UDSP_SERVICE_TYPE_RTS_CONSUMER.equals(type)) { // 实时流-消费者
+                    RtsConsumer rtsConsumer = rtsConsumerMapper.selectByName(appName);
+                    if (rtsConsumer == null) {
                         resultMap.put("status", "false");
                         resultMap.put("message", "第" + i + "个应用名称不存在！");
                         break;
                     }
-                    rcService.setAppId(rtsConsumerMapper.selectByName(serviceName).getPkId());
+                    appId = rtsConsumer.getPkId();
+                } else if (RcConstant.UDSP_SERVICE_TYPE_OLQ_APP.equals(type)) { // 联机查询应用
+                    OlqApplication olqApplication = olqApplicationService.selectByName(appName);
+                    if (olqApplication == null) {
+                        resultMap.put("status", "false");
+                        resultMap.put("message", "第" + i + "个应用名称不存在！");
+                        break;
+                    }
+                    appId = olqApplication.getPkId();
+                } else if (RcConstant.UDSP_SERVICE_TYPE_IM.equals(type)) { // 交互建模
+                    ImModel imModel = imModelService.selectByName(appName);
+                    if (imModel == null) {
+                        resultMap.put("status", "false");
+                        resultMap.put("message", "第" + i + "个应用名称不存在！");
+                        break;
+                    }
+                    appId = imModel.getPkId();
                 }
+                rcService.setAppId(appId);
+
                 //如果服务状态为空则
                 if (StringUtils.isBlank(rcService.getStatus())) {
                     rcService.setStatus(CommonConstant.SERVICE_STATUS_ENABLED);
@@ -514,7 +549,6 @@ public class RcServiceService {
         try {
             sourceFile = new POIFSFileSystem(new FileInputStream(
                     templateFile));
-
             sourceWork = new HSSFWorkbook(sourceFile);
             sourceSheet = sourceWork.getSheetAt(0);
             //创建表格
@@ -527,42 +561,50 @@ public class RcServiceService {
 
         int i = 1;
         String type;
-        String serviceName;
+        String appId;
+        String appName = null;
         for (RcService rcService : rcServices) {
-            //设置内容
-            RcService rcServiceTemp = rcServiceMapper.select(rcService.getPkId());
+            rcService = rcServiceMapper.select(rcService.getPkId());
+            type = rcService.getType();
+            appId = rcService.getAppId();
 
-            type = rcServiceTemp.getType();
-            serviceName = rcServiceTemp.getAppId();
-            if (RcConstant.UDSP_SERVICE_TYPE_IQ.equals(type)) {
-                rcService.setAppId(this.iqApplicationService.select(serviceName).getName());
-            } else if (RcConstant.UDSP_SERVICE_TYPE_OLQ.equals(type)) {
-                rcService.setAppId(comDatasourceService.select(serviceName).getName());
-            } else if (RcConstant.UDSP_SERVICE_TYPE_MM.equals(type)) {
-                rcService.setAppId(mmApplicationMapper.select(serviceName).getName());
-            } else if (RcConstant.UDSP_SERVICE_TYPE_RTS_PRODUCER.equals(type)) {
-                rcService.setAppId(rtsProducerMapper.select(serviceName).getName());
-            } else if (RcConstant.UDSP_SERVICE_TYPE_RTS_CONSUMER.equals(type)) {
-                rcService.setAppId(rtsConsumerMapper.select(serviceName).getName());
+            /*
+            通过type和appId获取appName
+             */
+            if (RcConstant.UDSP_SERVICE_TYPE_IQ.equals(type)) { // 交互查询
+                appName = iqApplicationService.select(appId).getName();
+            } else if (RcConstant.UDSP_SERVICE_TYPE_OLQ.equals(type)) { // 联机查询
+                appName = comDatasourceService.select(appId).getName();
+            } else if (RcConstant.UDSP_SERVICE_TYPE_MM.equals(type)) { // 模型管理
+                appName = mmApplicationMapper.select(appId).getName();
+            } else if (RcConstant.UDSP_SERVICE_TYPE_RTS_PRODUCER.equals(type)) { // 实时流-生产者
+                appName = rtsProducerMapper.select(appId).getName();
+            } else if (RcConstant.UDSP_SERVICE_TYPE_RTS_CONSUMER.equals(type)) { // 实时流-消费者
+                appName = rtsConsumerMapper.select(appId).getName();
+            } else if (RcConstant.UDSP_SERVICE_TYPE_OLQ_APP.equals(type)) { // 联机查询应用
+                appName = olqApplicationService.select(appId).getName();
+            } else if (RcConstant.UDSP_SERVICE_TYPE_IM.equals(type)) { // 交互建模
+                appName = imModelService.select(appId).getName();
             }
 
             row = sheet.createRow(i);
             cell = row.createCell(0);
             cell.setCellValue(i);
             cell = row.createCell(1);
-            cell.setCellValue(rcServiceTemp.getName());
+            cell.setCellValue(rcService.getName());
             cell = row.createCell(2);
-            cell.setCellValue(rcServiceTemp.getType());
+            cell.setCellValue(rcService.getType());
             cell = row.createCell(3);
-            cell.setCellValue(rcService.getAppId());
+            cell.setCellValue(appName);
             cell = row.createCell(4);
-            cell.setCellValue(rcServiceTemp.getDescribe());
+            cell.setCellValue(rcService.getDescribe());
             cell = row.createCell(5);
-            if (CommonConstant.SERVICE_STATUS_ENABLED.equals(rcServiceTemp.getStatus())) {
+            if (CommonConstant.SERVICE_STATUS_ENABLED.equals(rcService.getStatus())) {
                 cell.setCellValue(CommonConstant.SERVICE_STATUS_ENABLED_TEXT);
             } else {
                 cell.setCellValue(CommonConstant.SERVICE_STATUS_DISABLED_TEXT);
             }
+
             i++;
         }
         if (workbook != null) {
