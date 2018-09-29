@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="hex-udsp-im-converter-hbase">
-    <output-path>$PROJECT_DIR$/out/artifacts/hex_udsp_im_converter_hbase</output-path>
-    <root id="archive" name="hex-udsp-im-converter-hbase.jar">
-      <element id="module-output" name="im-converter-hbase" />
-    </root>
-  </artifact>
-</component>
