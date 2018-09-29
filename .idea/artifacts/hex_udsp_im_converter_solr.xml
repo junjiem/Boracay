@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="hex-udsp-im-converter-solr">
-    <output-path>$PROJECT_DIR$/out/artifacts/hex_udsp_im_converter_solr</output-path>
-    <root id="archive" name="hex-udsp-im-converter-solr.jar">
-      <element id="module-output" name="im-converter-solr" />
-    </root>
-  </artifact>
-</component>
