@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="hex-udsp-im-converter-mysql">
-    <output-path>$PROJECT_DIR$/out/artifacts/hex_udsp_im_converter_mysql</output-path>
-    <root id="archive" name="hex-udsp-im-converter-mysql.jar">
-      <element id="module-output" name="im-converter-mysql" />
-    </root>
-  </artifact>
-</component>
