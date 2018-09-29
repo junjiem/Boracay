@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="hex-udsp-im-converter-impala">
-    <output-path>$PROJECT_DIR$/out/artifacts/hex_udsp_im_converter_impala</output-path>
-    <root id="archive" name="hex-udsp-im-converter-impala.jar">
-      <element id="module-output" name="im-converter-impala" />
-    </root>
-  </artifact>
-</component>
