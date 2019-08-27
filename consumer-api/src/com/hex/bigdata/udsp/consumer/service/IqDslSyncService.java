@@ -1,18 +1,29 @@
 package com.hex.bigdata.udsp.consumer.service;
 
 import com.hex.bigdata.udsp.common.constant.ErrorCode;
+import com.hex.bigdata.udsp.common.constant.ServiceStatus;
+import com.hex.bigdata.udsp.common.constant.ServiceType;
 import com.hex.bigdata.udsp.consumer.model.ConsumeRequest;
 import com.hex.bigdata.udsp.consumer.model.Request;
 import com.hex.bigdata.udsp.consumer.model.Response;
 import com.hex.bigdata.udsp.consumer.util.Util;
+import com.hex.bigdata.udsp.dsl.DslSqlAdaptor;
+import com.hex.bigdata.udsp.dsl.model.DslSelectSql;
+import com.hex.bigdata.udsp.dsl.model.DslSql;
 import com.hex.bigdata.udsp.iq.provider.model.dsl.IqDslResponse;
 import com.hex.bigdata.udsp.iq.service.IqProviderService;
+import com.hex.bigdata.udsp.rc.model.RcService;
 import com.hex.bigdata.udsp.rc.model.RcUserService;
+import com.hex.bigdata.udsp.rc.service.RcServiceService;
+import com.hex.bigdata.udsp.rc.service.RcUserServiceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -36,6 +47,10 @@ public class IqDslSyncService {
     });
 
     @Autowired
+    private RcServiceService rcServiceService;
+    @Autowired
+    private RcUserServiceService rcUserServiceService;
+    @Autowired
     private IqProviderService iqProviderService;
     @Autowired
     private LoggingService loggingService;
@@ -51,15 +66,22 @@ public class IqDslSyncService {
         long runBef = System.currentTimeMillis ();
         Response response = new Response ();
         try {
-            final Request request = consumeRequest.getRequest ();
+            Request request = consumeRequest.getRequest ();
+
+            // 通过SQL解析成DslSelectSql
+            final DslSelectSql dslSelectSql = DslSqlAdaptor.sqlToObject (request.getSql ());
+
+            // 获取所有服务的元数据ID
+            final Map<String, String> mdIds = getMdIds (dslSelectSql, request.getUdspUser ());
+
             RcUserService rcUserService = consumeRequest.getRcUserService ();
             if (rcUserService == null || rcUserService.getMaxSyncExecuteTimeout () == 0) { // 不开启超时
-                response = run (request.getAppId (), request.getSql ());
+                response = run (mdIds, dslSelectSql);
             } else { // 开启一个新的线程，其内部执行交互查询任务，执行成功时或者执行超时时向下走
                 Future<Response> futureTask = executorService.submit (new Callable () {
                     @Override
                     public Response call() throws Exception {
-                        return run (request.getAppId (), request.getSql ());
+                        return run (mdIds, dslSelectSql);
                     }
                 });
                 response = futureTask.get (rcUserService.getMaxSyncExecuteTimeout (), TimeUnit.SECONDS);
@@ -76,13 +98,13 @@ public class IqDslSyncService {
     /**
      * 运行
      *
-     * @param mdId 交互查询的元数据ID
-     * @param sql  SQL语句
+     * @param mdIds
+     * @param dslSelectSql
      * @return Response
      */
-    public Response run(String mdId, String sql) {
+    public Response run(Map<String, String> mdIds, DslSelectSql dslSelectSql) {
         try {
-            IqDslResponse iqDslResponse = iqProviderService.select (mdId, sql);
+            IqDslResponse iqDslResponse = iqProviderService.select (mdIds, dslSelectSql);
             Response response = new Response ();
             response.setStatus (iqDslResponse.getStatus ().getValue ());
             response.setStatusCode (iqDslResponse.getStatusCode ().getValue ());
@@ -96,4 +118,34 @@ public class IqDslSyncService {
             return Util.errorResponse (ErrorCode.ERROR_000007, e.toString ());
         }
     }
+
+    private Map<String, String> getMdIds(DslSelectSql dslSelectSql, String udspUser) {
+        Map<String, String> mdIds = new HashMap<> ();
+        List<DslSql> dslSqls = dslSelectSql.getDslSqls ();
+        if (dslSqls != null && dslSqls.size () != 0) {
+            for (DslSql dslSql : dslSqls) {
+                String serviceName = dslSql.getName ();
+                RcService rcService = rcServiceService.selectByServiceName (serviceName);
+                if (rcService == null) {
+                    throw new RuntimeException (serviceName + "服务没有注册!");
+                }
+                if (ServiceStatus.STOP.getValue ().equals (rcService.getStatus ())) {
+                    throw new RuntimeException (serviceName + "服务已经停用!");
+                }
+                String appType = rcService.getType ();
+                if (!ServiceType.IQ.getValue ().equals (appType)
+                        && !ServiceType.IQ_DSL.getValue ().equals (appType)) {
+                    throw new RuntimeException (serviceName + "服务不支持自定义SQL!");
+                }
+                RcUserService rcUserService = rcUserServiceService.selectByUserIdAndServiceId (udspUser, rcService.getPkId ());
+                if (rcUserService == null) {
+                    throw new RuntimeException (serviceName + "服务没有授权给" + udspUser + "用户!");
+                }
+                String mdId = rcService.getAppId ();
+                mdIds.put (serviceName, mdId);
+            }
+        }
+        return mdIds;
+    }
+
 }

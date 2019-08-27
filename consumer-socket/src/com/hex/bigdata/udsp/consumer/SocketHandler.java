@@ -1,8 +1,7 @@
 package com.hex.bigdata.udsp.consumer;
 
 import com.hex.bigdata.udsp.common.api.model.Page;
-import com.hex.bigdata.udsp.common.constant.ErrorCode;
-import com.hex.bigdata.udsp.common.constant.ServiceType;
+import com.hex.bigdata.udsp.common.constant.*;
 import com.hex.bigdata.udsp.common.util.JSONUtil;
 import com.hex.bigdata.udsp.consumer.model.ConsumeRequest;
 import com.hex.bigdata.udsp.consumer.model.Request;
@@ -21,6 +20,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.CharsetUtil;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -86,8 +86,10 @@ public class SocketHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private String consume(String json, String ip) {
         Response response = new Response ();
         long bef = System.currentTimeMillis ();
+        Request request = null;
         try {
-            Request request = Util.jsonToRequest (json);
+            request = Util.jsonToRequest (json);
+            request.setRequestType (RequestType.OUTER.getValue ());
             request.setRequestIp (ip);
             String sql = request.getSql ();
             if (StringUtils.isBlank (request.getServiceName ())
@@ -96,11 +98,18 @@ public class SocketHandler extends SimpleChannelInboundHandler<ByteBuf> {
                 DSLSQLParser parser = DslSqlAdaptor.getDSLSQLParser (sql);
                 DSLSQLParser.StatementContext context = parser.statement ();
                 ParseTree parse = context.getChild (0);
-                if (parse instanceof DSLSQLParser.SelectStatementContext) { // select ...
+                if (parse instanceof DSLSQLParser.TestConnectionStatementContext) { // test connection
+                    List<Map<String, String>> records = new ArrayList<> ();
+                    Map<String, String> record = new HashMap<> ();
+                    record.put ("name", "test connection");
+                    records.add (record);
+                    response.setRecords (records);
+                    response.setStatusCode (StatusCode.SUCCESS.getValue ());
+                    response.setStatus (Status.SUCCESS.getValue ());
+                } else if (parse instanceof DSLSQLParser.SelectStatementContext) { // select ...
                     logger.debug ("select ...");
                     DSLSQLParser.SelectStatementContext selectStatementContext = (DSLSQLParser.SelectStatementContext) parse;
-                    String serviceName = DslSqlAdaptor.lowestSelectStatementContext (selectStatementContext)
-                            .subSelectStatement ().serviceName ().getText ();
+                    String serviceName = DslSqlAdaptor.selectStatementContextToFirstServiceName (selectStatementContext);
                     logger.debug ("serviceName:" + serviceName);
                     request.setServiceName (serviceName); // 设置serviceName
                     String serviceType = consumerService.getServiceType (serviceName);
@@ -109,7 +118,7 @@ public class SocketHandler extends SimpleChannelInboundHandler<ByteBuf> {
                     } else if (ServiceType.IQ.getValue ().equals (serviceType)) {
                         response = appSdlSelect (request); // 交互查询模块的应用的自定义select SQL
                     } else {
-                        throw new Exception ("该服务：" + serviceName + "不是交互查询类型");
+                        throw new Exception (serviceName + "服务不存在或不支持自定义SQL");
                     }
                 } else if (parse instanceof DSLSQLParser.ShowServicesStatementContext) { // show services
                     logger.debug ("show services");
@@ -118,20 +127,40 @@ public class SocketHandler extends SimpleChannelInboundHandler<ByteBuf> {
                     if (showServicesStatementContext.LIKE () != null) {
                         likeName = DslSqlAdaptor.textLiteralContextToValue (showServicesStatementContext.textLiteral ());
                     }
-                    response = consumerService.showServices (likeName);
+                    response = consumerService.showServices (request.getUdspUser (), likeName);
                 } else if (parse instanceof DSLSQLParser.DescribeServiceStatementContext) { // describe <service_name>
                     String serviceName = ((DSLSQLParser.DescribeServiceStatementContext) parse).serviceName ().getText ();
                     logger.debug ("describe " + serviceName);
-                    response = consumerService.describeService (serviceName);
+                    response = consumerService.describeService (request.getUdspUser (), serviceName);
+                } else if (parse instanceof DSLSQLParser.CleanCachesStatementContext) { // clean caches
+                    DSLSQLParser.CleanCachesStatementContext cleanCachesStatementContext = (DSLSQLParser.CleanCachesStatementContext) parse;
+                    if (cleanCachesStatementContext.serviceName () != null) { // clean caches <service_name>
+                        String serviceName = cleanCachesStatementContext.serviceName ().getText ();
+                        logger.debug ("clean caches " + serviceName);
+                        response = consumerService.cleanCachesService (request.getUdspUser (), serviceName);
+                    } else { // clean caches
+                        logger.debug ("clean caches");
+                        response = consumerService.cleanCaches (request.getUdspUser ());
+                    }
+                } else if (parse instanceof DSLSQLParser.ShowCachesStatementContext) { // show caches
+                    DSLSQLParser.ShowCachesStatementContext showCachesStatementContext = (DSLSQLParser.ShowCachesStatementContext) parse;
+                    if (showCachesStatementContext.serviceName () != null) { // show caches <service_name>
+                        String serviceName = showCachesStatementContext.serviceName ().getText ();
+                        logger.debug ("show caches "+serviceName);
+                        response = consumerService.showCachesService (serviceName);
+                    }else { // show caches
+                        logger.debug ("show caches");
+                        response = consumerService.showCaches ();
+                    }
                 } else {
-                    throw new Exception ("交互查询不支持该SQL语句：" + sql);
+                    throw new Exception ("不支持该SQL语句：" + sql);
                 }
             } else { // 老的请求方式
                 response = consumerService.consume (request);
             }
         } catch (Exception e) {
             e.printStackTrace ();
-            loggingService.writeResponseLog (response, new ConsumeRequest (), bef, 0, ErrorCode.ERROR_000005, e.toString ());
+            loggingService.writeResponseLog (response, new ConsumeRequest (request), bef, 0, ErrorCode.ERROR_000005, e.toString ());
         }
         return JSONUtil.parseObj2JSON (response);
     }
@@ -178,6 +207,9 @@ public class SocketHandler extends SimpleChannelInboundHandler<ByteBuf> {
             if (selectElementsContext.star != null) {
                 // 获取数据集
                 response = consumerService.consume (request);
+                if (!StatusCode.SUCCESS.getValue ().equals (response.getStatusCode ())) {
+                    return response;
+                }
             } else {
                 // 获取总行数
                 APPDSLParser.SelectElementContext selectElementContext = selectElementsContext.selectElement ();
@@ -186,6 +218,9 @@ public class SocketHandler extends SimpleChannelInboundHandler<ByteBuf> {
                     alias = selectElementContext.uid ().getText (); // AS别名
                 }
                 response = consumerService.consume (request);
+                if (!StatusCode.SUCCESS.getValue ().equals (response.getStatusCode ())) {
+                    return response;
+                }
                 long totalCount = response.getRecords ().size ();
                 Page page = response.getPage ();
                 if (page != null) {

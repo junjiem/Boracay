@@ -116,9 +116,8 @@ public class LoggingService {
 
         McConsumeLog mcConsumeLog = new McConsumeLog ();
         mcConsumeLog.setPkId (consumeId);
-        mcConsumeLog.setResponseContent ("");
         mcConsumeLog.setErrorCode (errorCode.getValue ());
-        mcConsumeLog.setMessage (errorCode.getName () + ":" + message);
+        mcConsumeLog.setMessage (message);
         if (bef != 0) {
             mcConsumeLog.setRequestStartTime (DateUtil.getDateString (bef));
             mcConsumeLog.setRequestEndTime (DateUtil.getDateString (now));
@@ -131,8 +130,8 @@ public class LoggingService {
         if (response != null) {
             response.setStatus (Status.DEFEAT.getValue ());
             response.setStatusCode (StatusCode.DEFEAT.getValue ());
-            response.setMessage (errorCode.getName () + ":" + message);
             response.setErrorCode (errorCode.getValue ());
+            response.setMessage (message);
             response.setConsumeTime (now - bef);
             response.setConsumeId (consumeId);
         }

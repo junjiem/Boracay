@@ -1,5 +1,6 @@
 package com.hex.bigdata.udsp.common.aggregator.task;
 
+import com.hex.bigdata.udsp.common.aggregator.H2Aggregator;
 import com.hex.bigdata.udsp.common.aggregator.util.H2SqlUtil;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.logging.log4j.LogManager;
@@ -21,22 +22,13 @@ public class H2DataCleanTask {
     private static Logger logger = LogManager.getLogger (H2DataCleanTask.class);
 
     @Autowired
-    @Qualifier("h2DataSource")
-    private BasicDataSource h2DataSource;
+    private H2Aggregator h2Aggregator;
 
     /**
      * 清空H2数据库数据
      */
-    @Scheduled(cron = "${aggregator.h2.clean.expression:0 0 0 * * ?}")
+    @Scheduled(cron = "${aggregator.h2.clean.expression:0 1 0 * * ?}")
     public void cleanH2Database() {
-        try (Connection conn = h2DataSource.getConnection ();
-             Statement stmt = conn.createStatement ();) {
-            String resetDB = H2SqlUtil.resetDB();
-            logger.info ("Execute: {}", resetDB);
-            stmt.execute (resetDB);
-        } catch (SQLException e) {
-            e.printStackTrace ();
-            logger.error ("", e);
-        }
+        h2Aggregator.cleanDatabase ();
     }
 }

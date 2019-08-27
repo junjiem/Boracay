@@ -1,13 +1,15 @@
 package com.hex.bigdata.udsp.dsl.model;
 
+import java.util.List;
+
 /**
  * Created by JunjieM on 2019-8-22.
  */
 public class DslSelectSql {
 
-    private String sourceSql; // 真实的Select SQL语句
-    private String fakeSql; // 伪的Select SQL语句（子的Select SQL部分用${subSelectSql}代替）
-    private DslSql dslSql; // 子的Select SQL对象
+    private String sourceSql; // 源Select SQL语句
+    private String fakeSql; // 伪Select SQL语句
+    private List<DslSql> dslSqls; // 子的Select SQL对象
 
     public String getSourceSql() {
         return sourceSql;
@@ -25,11 +27,11 @@ public class DslSelectSql {
         this.fakeSql = fakeSql;
     }
 
-    public DslSql getDslSql() {
-        return dslSql;
+    public List<DslSql> getDslSqls() {
+        return dslSqls;
     }
 
-    public void setDslSql(DslSql dslSql) {
-        this.dslSql = dslSql;
+    public void setDslSqls(List<DslSql> dslSqls) {
+        this.dslSqls = dslSqls;
     }
 }

@@ -14,6 +14,13 @@ public class DslSql {
     private List<Order> orderBy; // 排序
     private Limit limit; // 限制
 
+    public DslSql() {
+    }
+
+    public DslSql(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }

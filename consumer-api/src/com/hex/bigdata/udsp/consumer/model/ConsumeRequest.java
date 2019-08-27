@@ -3,6 +3,7 @@ package com.hex.bigdata.udsp.consumer.model;
 import com.hex.bigdata.udsp.common.constant.ErrorCode;
 import com.hex.bigdata.udsp.common.model.QueueIsFullResult;
 import com.hex.bigdata.udsp.mc.model.Current;
+import com.hex.bigdata.udsp.rc.model.RcService;
 import com.hex.bigdata.udsp.rc.model.RcUserService;
 
 public class ConsumeRequest {
@@ -11,8 +12,16 @@ public class ConsumeRequest {
     private Current mcCurrent;
     private ErrorCode error;
     private String message;
+    private RcService rcService;
     private RcUserService rcUserService;
     private QueueIsFullResult queueIsFullResult;
+
+    public ConsumeRequest() {
+    }
+
+    public ConsumeRequest(Request request) {
+        this.request = request;
+    }
 
     public Request getRequest() {
         return request;
@@ -60,5 +69,13 @@ public class ConsumeRequest {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public RcService getRcService() {
+        return rcService;
+    }
+
+    public void setRcService(RcService rcService) {
+        this.rcService = rcService;
     }
 }

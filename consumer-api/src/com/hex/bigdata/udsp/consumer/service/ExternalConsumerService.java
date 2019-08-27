@@ -1,5 +1,6 @@
 package com.hex.bigdata.udsp.consumer.service;
 
+import com.hex.bigdata.udsp.common.aggregator.H2Aggregator;
 import com.hex.bigdata.udsp.common.constant.*;
 import com.hex.bigdata.udsp.common.util.JSONUtil;
 import com.hex.bigdata.udsp.consumer.model.ConsumeRequest;
@@ -9,7 +10,9 @@ import com.hex.bigdata.udsp.consumer.util.Util;
 import com.hex.bigdata.udsp.iq.provider.model.*;
 import com.hex.bigdata.udsp.iq.service.IqProviderService;
 import com.hex.bigdata.udsp.rc.model.RcService;
+import com.hex.bigdata.udsp.rc.model.RcUserService;
 import com.hex.bigdata.udsp.rc.service.RcServiceService;
+import com.hex.bigdata.udsp.rc.service.RcUserServiceService;
 import com.hex.goframe.model.MessageResult;
 import com.hex.goframe.service.UserService;
 import org.apache.commons.lang3.StringUtils;
@@ -36,9 +39,13 @@ public class ExternalConsumerService {
     @Autowired
     private RcServiceService rcServiceService;
     @Autowired
+    private RcUserServiceService rcUserServiceService;
+    @Autowired
     private ConsumerService consumerService;
     @Autowired
     private IqProviderService iqProviderService;
+    @Autowired
+    private H2Aggregator h2Aggregator;
 
     /**
      * 外部请求消费
@@ -132,7 +139,7 @@ public class ExternalConsumerService {
      *
      * @return
      */
-    public Response showServices(String likeName) {
+    public Response showServices(String udspUser, String likeName) {
         Response response = new Response ();
         List<Map<String, String>> records = new ArrayList<> ();
         Map<String, String> record = null;
@@ -143,13 +150,24 @@ public class ExternalConsumerService {
         }
         iqServices.addAll (iqDslServices);
         if (iqServices.size () != 0) {
-            for (RcService service : iqServices) {
-                record = new HashMap<> ();
-                record.put ("name", service.getName ());
-                record.put ("type", service.getType ());
-                record.put ("comment", service.getDescribe ());
-                records.add (record);
+            for (RcService rcService : iqServices) {
+                RcUserService rcUserService = rcUserServiceService.selectByUserIdAndServiceId (udspUser, rcService.getPkId ());
+                if (rcUserService != null) {
+                    record = new HashMap<> ();
+                    record.put ("name", rcService.getName ());
+                    record.put ("type", rcService.getType ());
+                    record.put ("comment", rcService.getDescribe ());
+                    records.add (record);
+                }
             }
+        }
+        // 由于使用show services作为连接池测试连接是否断开的语法，当返回为了防止没有服务时返回空的结果集，
+        if (records.size () == 0) {
+            record = new HashMap<> ();
+            record.put ("name", "test_service");
+            record.put ("type", "test");
+            record.put ("comment", "this is a test service");
+            records.add (record);
         }
         response.setRecords (records);
         response.setStatus (Status.SUCCESS.getValue ());
@@ -163,17 +181,28 @@ public class ExternalConsumerService {
      * @param serviceName
      * @return
      */
-    public Response describeService(String serviceName) {
+    public Response describeService(String udspUser, String serviceName) {
         Response response = new Response ();
         List<Map<String, String>> records = new ArrayList<> ();
         Map<String, String> record = null;
-        RcService service = rcServiceService.selectByName (serviceName);
-        if (service == null) {
-            return Util.errorResponse (ErrorCode.ERROR_000099, "服务名错误或不存在!");
+        RcService rcService = rcServiceService.selectByName (serviceName);
+        if (rcService == null) {
+            return Util.errorResponse (ErrorCode.ERROR_000004, serviceName + "服务没有注册，无法查看描述信息!");
+        }
+        if (ServiceStatus.STOP.getValue ().equals (rcService.getStatus ())) {
+            return Util.errorResponse (ErrorCode.ERROR_000017, serviceName + "服务已经停用，无法查看描述信息!");
+        }
+        String appType = rcService.getType ();
+        if (!ServiceType.IQ.getValue ().equals (appType)
+                && !ServiceType.IQ_DSL.getValue ().equals (appType)) {
+            return Util.errorResponse (ErrorCode.ERROR_000019, serviceName + "服务不支持自定义SQL，无法查看描述信息!");
+        }
+        RcUserService rcUserService = rcUserServiceService.selectByUserIdAndServiceId (udspUser, rcService.getPkId ());
+        if (rcUserService == null) {
+            return Util.errorResponse (ErrorCode.ERROR_000008, serviceName + "服务没有授权给" + udspUser + "用户，无法查看描述信息!");
         }
         try {
-            String appType = service.getType ();
-            String appId = service.getAppId ();
+            String appId = rcService.getAppId ();
             if (ServiceType.IQ.getValue ().equals (appType)) { // 交互查询应用的自定义SQL
                 Application application = iqProviderService.getApplication (appId);
                 List<QueryColumn> queryColumns = application.getQueryColumns ();
@@ -313,6 +342,117 @@ public class ExternalConsumerService {
             return null;
         }
         return service.getType ();
+    }
+
+    /**
+     * 清空指定服务的缓存
+     *
+     * @param udspUser
+     * @param serviceName
+     * @return
+     */
+    public Response cleanCachesService(String udspUser, String serviceName) {
+        RcService rcService = rcServiceService.selectByName (serviceName);
+        if (rcService == null) {
+            return Util.errorResponse (ErrorCode.ERROR_000004, serviceName + "服务没有注册，无法清空缓存!");
+        }
+        RcUserService rcUserService = rcUserServiceService.selectByUserIdAndServiceId (udspUser, rcService.getPkId ());
+        if (rcUserService == null) {
+            return Util.errorResponse (ErrorCode.ERROR_000008, serviceName + "服务没有授权给" + udspUser + "用户，无法清空缓存!");
+        }
+        try {
+            Response response = new Response ();
+            List<String> list = h2Aggregator.getCaches (serviceName);
+            if (list != null && list.size () != 0) {
+                for (String tableName : list) {
+                    h2Aggregator.dropTable (tableName);
+                }
+            }
+            response.setStatus (Status.SUCCESS.getValue ());
+            response.setStatusCode (StatusCode.SUCCESS.getValue ());
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace ();
+            return Util.errorResponse (ErrorCode.ERROR_000007, e.toString ());
+        }
+    }
+
+    /**
+     * 清空所有服务的缓存
+     *
+     * @return
+     */
+    public Response cleanCaches(String udspUser) {
+        Response response = new Response ();
+        if (!"admin".equalsIgnoreCase (udspUser)) {
+            return Util.errorResponse (ErrorCode.ERROR_000001, "非admin用户无法清空所有缓存!");
+        }
+        try {
+            h2Aggregator.cleanDatabase ();
+            response.setStatus (Status.SUCCESS.getValue ());
+            response.setStatusCode (StatusCode.SUCCESS.getValue ());
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace ();
+            return Util.errorResponse (ErrorCode.ERROR_000007, e.toString ());
+        }
+    }
+
+    /**
+     * 获取服务的缓存列表
+     *
+     * @param serviceName
+     * @return
+     */
+    public Response showCachesService(String serviceName) {
+        try {
+            Response response = new Response ();
+            List<String> list = h2Aggregator.getCaches (serviceName);
+            if (list != null && list.size () != 0) {
+                List<Map<String, String>> records = new ArrayList<> ();
+                Map<String, String> record = null;
+                for (String tableName : list) {
+                    record = new HashMap<> ();
+                    record.put ("name", tableName);
+                    records.add (record);
+                }
+                response.setRecords (records);
+            }
+            response.setStatus (Status.SUCCESS.getValue ());
+            response.setStatusCode (StatusCode.SUCCESS.getValue ());
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace ();
+            return Util.errorResponse (ErrorCode.ERROR_000007, e.toString ());
+        }
+    }
+
+    /**
+     * 获取缓存列表
+     *
+     * @return
+     */
+    public Response showCaches() {
+        try {
+            Response response = new Response ();
+            List<String> list = h2Aggregator.getCaches ();
+            if (list != null && list.size () != 0) {
+                List<Map<String, String>> records = new ArrayList<> ();
+                Map<String, String> record = null;
+                for (String tableName : list) {
+                    record = new HashMap<> ();
+                    record.put ("name", tableName);
+                    records.add (record);
+                }
+                response.setRecords (records);
+            }
+            response.setStatus (Status.SUCCESS.getValue ());
+            response.setStatusCode (StatusCode.SUCCESS.getValue ());
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace ();
+            return Util.errorResponse (ErrorCode.ERROR_000007, e.toString ());
+        }
     }
 
 }

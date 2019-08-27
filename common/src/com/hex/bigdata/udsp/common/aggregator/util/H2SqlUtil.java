@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class H2SqlUtil {
 
-    public static String resetDB(){
+    public static String resetDB() {
         return "DROP ALL OBJECTS DELETE FILES";
     }
 
@@ -81,5 +81,9 @@ public class H2SqlUtil {
 
     public static String tablesInfo(String tableName) {
         return "SELECT count(*) FROM INFORMATION_SCHEMA.tables WHERE table_name = upper('" + tableName + "')";
+    }
+
+    public static String tableList(String tableNamePrefix) {
+        return "SELECT table_name FROM INFORMATION_SCHEMA.tables WHERE table_name like '" + tableNamePrefix.toUpperCase () + "%'";
     }
 }

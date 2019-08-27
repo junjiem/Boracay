@@ -19,5 +19,6 @@
     <orderEntry type="library" name="poi" level="project" />
     <orderEntry type="library" name="h2" level="project" />
     <orderEntry type="module" module-name="common-api" />
+    <orderEntry type="module" module-name="dsl" />
   </component>
 </module>

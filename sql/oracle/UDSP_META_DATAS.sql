@@ -2169,7 +2169,7 @@ values ('OLQ_DS_PROPS_DSL', 'max.active', '最大并发数', null, 8, null, null
 insert into T_GF_DICT (dict_type_id, dict_id, dict_name, status, sort_no, parent_id, seqno, appid, filter)
 values ('OLQ_DS_PROPS_DSL', 'max.wait', '最长等待时间，单位毫秒', null, 9, null, null, 'default', '60000');
 insert into T_GF_DICT (dict_type_id, dict_id, dict_name, status, sort_no, parent_id, seqno, appid, filter)
-values ('OLQ_DS_PROPS_DSL', 'validation.query', '验证链接的SQL语句，必须能返回一行及以上数据', null, 10, null, null, 'default', 'show services');
+values ('OLQ_DS_PROPS_DSL', 'validation.query', '验证链接的SQL语句，必须能返回一行及以上数据', null, 10, null, null, 'default', 'test connection');
 insert into T_GF_DICT (dict_type_id, dict_id, dict_name, status, sort_no, parent_id, seqno, appid, filter)
 values ('OLQ_DS_PROPS_DSL', 'validation.query.timeout', '验证有效连接的超时时间', null, 11, null, null, 'default', '0');
 insert into T_GF_DICT (dict_type_id, dict_id, dict_name, status, sort_no, parent_id, seqno, appid, filter)

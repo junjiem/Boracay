@@ -19,11 +19,23 @@ public interface DSLSQLVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitStatement(DSLSQLParser.StatementContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link DSLSQLParser#describeServiceStatement}.
+	 * Visit a parse tree produced by {@link DSLSQLParser#testConnectionStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDescribeServiceStatement(DSLSQLParser.DescribeServiceStatementContext ctx);
+	T visitTestConnectionStatement(DSLSQLParser.TestConnectionStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DSLSQLParser#showCachesStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitShowCachesStatement(DSLSQLParser.ShowCachesStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DSLSQLParser#cleanCachesStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCleanCachesStatement(DSLSQLParser.CleanCachesStatementContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DSLSQLParser#showServicesStatement}.
 	 * @param ctx the parse tree
@@ -31,11 +43,47 @@ public interface DSLSQLVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitShowServicesStatement(DSLSQLParser.ShowServicesStatementContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link DSLSQLParser#describeServiceStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDescribeServiceStatement(DSLSQLParser.DescribeServiceStatementContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link DSLSQLParser#selectStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitSelectStatement(DSLSQLParser.SelectStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DSLSQLParser#joinCaluse}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJoinCaluse(DSLSQLParser.JoinCaluseContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DSLSQLParser#joinElement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJoinElement(DSLSQLParser.JoinElementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DSLSQLParser#joinStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJoinStatement(DSLSQLParser.JoinStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DSLSQLParser#joinOperator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJoinOperator(DSLSQLParser.JoinOperatorContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DSLSQLParser#onStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOnStatement(DSLSQLParser.OnStatementContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DSLSQLParser#subSelectStatement}.
 	 * @param ctx the parse tree
@@ -48,6 +96,12 @@ public interface DSLSQLVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitSelectElements(DSLSQLParser.SelectElementsContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DSLSQLParser#star}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStar(DSLSQLParser.StarContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DSLSQLParser#whereClause}.
 	 * @param ctx the parse tree
@@ -66,6 +120,12 @@ public interface DSLSQLVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitLogicExpression(DSLSQLParser.LogicExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DSLSQLParser#logicExpressionCal}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLogicExpressionCal(DSLSQLParser.LogicExpressionCalContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DSLSQLParser#groupByCaluse}.
 	 * @param ctx the parse tree

@@ -30,13 +30,37 @@ public class DSLSQLBaseListener implements DSLSQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDescribeServiceStatement(DSLSQLParser.DescribeServiceStatementContext ctx) { }
+	@Override public void enterTestConnectionStatement(DSLSQLParser.TestConnectionStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitDescribeServiceStatement(DSLSQLParser.DescribeServiceStatementContext ctx) { }
+	@Override public void exitTestConnectionStatement(DSLSQLParser.TestConnectionStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterShowCachesStatement(DSLSQLParser.ShowCachesStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitShowCachesStatement(DSLSQLParser.ShowCachesStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCleanCachesStatement(DSLSQLParser.CleanCachesStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCleanCachesStatement(DSLSQLParser.CleanCachesStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -54,6 +78,18 @@ public class DSLSQLBaseListener implements DSLSQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDescribeServiceStatement(DSLSQLParser.DescribeServiceStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDescribeServiceStatement(DSLSQLParser.DescribeServiceStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterSelectStatement(DSLSQLParser.SelectStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -61,6 +97,66 @@ public class DSLSQLBaseListener implements DSLSQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSelectStatement(DSLSQLParser.SelectStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterJoinCaluse(DSLSQLParser.JoinCaluseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitJoinCaluse(DSLSQLParser.JoinCaluseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterJoinElement(DSLSQLParser.JoinElementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitJoinElement(DSLSQLParser.JoinElementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterJoinStatement(DSLSQLParser.JoinStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitJoinStatement(DSLSQLParser.JoinStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterJoinOperator(DSLSQLParser.JoinOperatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitJoinOperator(DSLSQLParser.JoinOperatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterOnStatement(DSLSQLParser.OnStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitOnStatement(DSLSQLParser.OnStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -85,6 +181,18 @@ public class DSLSQLBaseListener implements DSLSQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSelectElements(DSLSQLParser.SelectElementsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterStar(DSLSQLParser.StarContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStar(DSLSQLParser.StarContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -121,6 +229,18 @@ public class DSLSQLBaseListener implements DSLSQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitLogicExpression(DSLSQLParser.LogicExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterLogicExpressionCal(DSLSQLParser.LogicExpressionCalContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitLogicExpressionCal(DSLSQLParser.LogicExpressionCalContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -89,8 +89,6 @@ public class ConsumerService {
     @Autowired
     private ResponseMapper responseMapper;
     @Autowired
-    private RcServiceService rcServiceService;
-    @Autowired
     private IqDslSyncService iqDslSyncService;
 
     /**
@@ -103,39 +101,42 @@ public class ConsumerService {
      */
     public ConsumeRequest checkConsume(Request request, String udspUser, RcService rcService, long bef) {
         ConsumeRequest consumeRequest = new ConsumeRequest ();
+        consumeRequest.setRcService (rcService);
+
         // 没有注册服务
         if (rcService == null) {
             consumeRequest.setError (ErrorCode.ERROR_000004);
+            consumeRequest.setMessage (request.getServiceName () + "服务没有注册");
             return consumeRequest;
         }
+
         // 服务停用
         if (ServiceStatus.STOP.getValue ().equals (rcService.getStatus ())) {
             consumeRequest.setError (ErrorCode.ERROR_000017);
+            consumeRequest.setMessage (request.getServiceName () + "服务已经停用");
             return consumeRequest;
         }
-        String type = request.getType ();
+
         String entity = request.getEntity ();
-        String ip = request.getRequestIp ();
-        Map<String, String> paraMap = request.getData ();
-        String consumeId = request.getConsumeId ();
-        String serviceId = rcService.getPkId ();
         String appType = rcService.getType ();
         String appId = rcService.getAppId ();
         String appName = getAppName (appType, appId);
         request.setAppName (appName);
         request.setAppId (appId);
         request.setAppType (appType);
-        RcUserService rcUserService = rcUserServiceService.selectByUserIdAndServiceId (udspUser, serviceId);
+
+        RcUserService rcUserService = rcUserServiceService.selectByUserIdAndServiceId (udspUser, rcService.getPkId ());
         // 没有授权服务
         if (rcUserService == null) {
             consumeRequest.setError (ErrorCode.ERROR_000008);
+            consumeRequest.setMessage (request.getServiceName () + "服务没有授权给" + udspUser + "用户");
             return consumeRequest;
         }
         consumeRequest.setRcUserService (rcUserService);
-        int maxSyncNum = rcUserService.getMaxSyncNum ();
-        int maxAsyncNum = rcUserService.getMaxAsyncNum ();
-        String ipSection = rcUserService.getIpSection ();
+
         // IP段控制
+        String ip = request.getRequestIp ();
+        String ipSection = rcUserService.getIpSection ();
         if (StringUtils.isNotBlank (ipSection)) {
             if (StringUtils.isBlank (ip)) {
                 consumeRequest.setError (ErrorCode.ERROR_000006);
@@ -146,6 +147,7 @@ public class ConsumerService {
                 return consumeRequest;
             }
         }
+
         // OLQ_APP
         if (ServiceType.OLQ_APP.getValue ().equals (appType)
                 && ConsumerEntity.START.getValue ().equalsIgnoreCase (entity)) {
@@ -157,7 +159,10 @@ public class ConsumerService {
                 return consumeRequest;
             }
         }
+
         // 并发判断
+        int maxSyncNum = rcUserService.getMaxSyncNum ();
+        int maxAsyncNum = rcUserService.getMaxAsyncNum ();
         Current mcCurrent = getCurrent (request, maxSyncNum, maxAsyncNum);
         consumeRequest.setMcCurrent (mcCurrent);
         if (!runQueueService.addCurrent (mcCurrent)) { // 运行队列已满
@@ -171,8 +176,9 @@ public class ConsumerService {
                 waitingService.isWaiting (consumeRequest, bef);
             }
         }
+
         // 重新设置request
-        consumeId = (StringUtils.isNotBlank (consumeId) ? consumeId : mcCurrent.getPkId ());
+        String consumeId = (StringUtils.isNotBlank (request.getConsumeId ()) ? request.getConsumeId () : mcCurrent.getPkId ());
         request.setConsumeId (consumeId);
         consumeRequest.setRequest (request);
         return consumeRequest;
@@ -211,25 +217,18 @@ public class ConsumerService {
         String udspUser = request.getUdspUser ();
         response.setConsumeId (consumeId); // 必须先设置consumeId
         try {
+            // 获取缓存数据
             // ------------------------数据缓存处理【START】-----------------------------
             String isCache = "1";
             String cacheId = null;
             long cacheTime = 60;
-            RcService rcService = rcServiceService.selectByAppTypeAndAppId (appType, appId);
+            RcService rcService = consumeRequest.getRcService ();
             if (rcService != null) {
                 isCache = rcService.getIsCache ();
                 cacheTime = rcService.getTimeout ();
                 if ("0".equals (isCache) && ConsumerType.SYNC.getValue ().equalsIgnoreCase (type)
                         && !ConsumerEntity.STATUS.getValue ().equalsIgnoreCase (entity)) {
-                    Map<String, Object> map = new HashMap<> ();
-                    map.put ("appType", appType);
-                    map.put ("appId", appId);
-                    map.put ("type", type);
-                    map.put ("entity", entity);
-                    map.put ("page", page);
-                    map.put ("sql", sql);
-                    map.put ("data", paraMap);
-                    cacheId = MD5Util.MD5_16 (JSONUtil.parseMap2JSON (map));
+                    cacheId = Util.getCacheId (request);
                     response = responseMapper.select (cacheId);
                     if (response != null) {
                         loggingService.writeResponseLog (request, response, bef, runBef, true); // 写消费信息到数据库
@@ -297,21 +296,27 @@ public class ConsumerService {
             if (ConsumerType.ASYNC.getValue ().equalsIgnoreCase (type)
                     && ConsumerEntity.START.getValue ().equalsIgnoreCase (entity)
                     && !ServiceType.MM.getValue ().equalsIgnoreCase (appType)) {
+                // -----------------异步任务做如下处理-----------------
+                // 异步任务调起就直接返回成功和文件路径
                 String ftpFilePath = CreateFileUtil.getFtpFileDir (udspUser) + "/" + CreateFileUtil.getDataFileName (fileName);
                 response.setResponseContent (ftpFilePath);
                 response.setStatusCode (StatusCode.SUCCESS.getValue ());
                 response.setStatus (Status.SUCCESS.getValue ());
             } else {
-                // -------------------把获取的数据插入缓存【START】---------------------
+                // -----------------同步任务做如下处理-----------------
+                // 把获取的数据插入缓存
+                // ------------------------数据缓存处理【START】-----------------------------
                 if ("0".equals (isCache)
                         && ConsumerType.SYNC.getValue ().equalsIgnoreCase (type)
                         && !ConsumerEntity.STATUS.getValue ().equalsIgnoreCase (entity)
                         && Status.SUCCESS.getValue ().equals (response.getStatus ())) {
                     responseMapper.insertTimeout (cacheId, response, cacheTime * 1000);
                 }
-                // -------------------把获取的数据插入缓存【END】---------------------
-                if (!ConsumerEntity.STATUS.getValue ().equalsIgnoreCase (entity)) {
-                    loggingService.writeResponseLog (request, response, bef, runBef, false); // 写消费信息到数据库
+                // ------------------------数据缓存处理【END】-----------------------------
+                // 成功且不是查看状态时写日志
+                if (StatusCode.SUCCESS.getValue ().equals (response.getStatusCode ())
+                        && !ConsumerEntity.STATUS.getValue ().equalsIgnoreCase (entity)) {
+                    loggingService.writeResponseLog (request, response, bef, runBef, false);
                 }
             }
             return response;

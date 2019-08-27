@@ -25,7 +25,6 @@ import com.hex.bigdata.udsp.iq.provider.model.dsl.IqDslResponse;
 import com.hex.goframe.dao.GFDictMapper;
 import com.hex.goframe.model.GFDict;
 import com.hex.goframe.service.BaseService;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.logging.log4j.LogManager;
@@ -44,7 +43,6 @@ public class IqProviderService extends BaseService {
     private static Logger logger = LogManager.getLogger (IqProviderService.class);
     private static final String IQ_IMPL_CLASS = "IQ_IMPL_CLASS";
     private static final String MAX_VALUE_EXPRESSION = "${maxValue}";
-    private static final String TBL_PREFIX = "TMP_";
 
     private static final FastDateFormat format8 = FastDateFormat.getInstance ("yyyyMMdd");
     private static final FastDateFormat format10 = FastDateFormat.getInstance ("yyyy-MM-dd");
@@ -199,28 +197,49 @@ public class IqProviderService extends BaseService {
     }
 
     /**
-     * 自定义SQL查询
+     * 自定义DSL查询（支持多服务关联查询）
      *
-     * @param mdId
-     * @param sql
+     * @param mdIds
+     * @param dslSelectSql
      * @return
      */
-    public IqDslResponse select(String mdId, String sql) {
+    public IqDslResponse select(Map<String, String> mdIds, DslSelectSql dslSelectSql) {
         IqDslResponse response = new IqDslResponse ();
-        DslSelectSql dslSelectSql = DslSqlAdaptor.sqlToObject (sql);
-        DslSql dslSql = dslSelectSql.getDslSql ();
+        // 查询IQ
+        long consumeTime = 0;
+        List<DslSql> dslSqls = dslSelectSql.getDslSqls ();
+        if (dslSqls != null && dslSqls.size () != 0) {
+            for (DslSql dslSql : dslSqls) {
+                String serviceName = dslSql.getName ();
+                String mdId = mdIds.get (serviceName);
+                response = selectAndLoad (mdId, dslSql);
+                if (StatusCode.SUCCESS != response.getStatusCode ()) {
+                    response.setMessage (serviceName + "服务错误信息：" + response.getMessage ());
+                    return response;
+                }
+                response.setConsumeTime (consumeTime + response.getConsumeTime ());
+                consumeTime = response.getConsumeTime ();
+            }
+        }
+        // 查询H2
+        H2Response h2Response = h2Aggregator.query (getH2Sql (dslSelectSql));
+        response.setStatus (Status.SUCCESS);
+        response.setStatusCode (StatusCode.SUCCESS);
+        response.setColumns (h2Response.getColumns ());
+        response.setRecords (h2Response.getRecords ());
+        return response;
+    }
+
+    // 查询并加载到H2
+    private IqDslResponse selectAndLoad(String mdId, DslSql dslSql) {
+        IqDslResponse response = new IqDslResponse ();
+        response.setStatus (Status.SUCCESS);
+        response.setStatusCode (StatusCode.SUCCESS);
         Metadata metadata = getMetadata (mdId);
-
         checkDslSql (dslSql, metadata); // 检查和重构DslSql
-
         Component where = dslSql.getWhere ();
-        String h2TableName = TBL_PREFIX + DigestUtils.md5Hex (dslSql.getName ()
-                + " " + DslSqlAdaptor.componentToStatement (where));
+        String h2TableName = h2Aggregator.getH2TableName (dslSql.getName (), where);
         logger.info ("h2TableName: " + h2TableName);
-        dslSql.setName (h2TableName);
-        dslSql.setWhere (null);
-        dslSelectSql.setDslSql (dslSql);
-
         synchronized (h2TableName.intern ()) {
             if (h2Aggregator.isReload (h2TableName)) {
                 // query from iq datasource
@@ -234,15 +253,20 @@ public class IqProviderService extends BaseService {
                 // load to h2 database
                 h2Aggregator.load (h2TableName, getH2DataColumns (metadata.getReturnColumns ()), response.getRecords ());
             }
-            // query from h2 database
-            H2Response h2Response = h2Aggregator.query (DslSqlAdaptor.objectToSql (dslSelectSql));
-            response.setStatus (Status.SUCCESS);
-            response.setStatusCode (StatusCode.SUCCESS);
-            response.setColumns (h2Response.getColumns ());
-            response.setRecords (h2Response.getRecords ());
         }
-
         return response;
+    }
+
+    private String getH2Sql(DslSelectSql dslSelectSql) {
+        List<DslSql> dslSqls = dslSelectSql.getDslSqls ();
+        if (dslSqls != null && dslSqls.size () != 0) {
+            for (DslSql dslSql : dslSqls) {
+                dslSql.setName (h2Aggregator.getH2TableName (dslSql.getName (), dslSql.getWhere ()));
+                dslSql.setWhere (null);
+            }
+            dslSelectSql.setDslSqls (dslSqls);
+        }
+        return DslSqlAdaptor.objectToSql (dslSelectSql);
     }
 
     private List<H2DataColumn> getH2DataColumns(List<DataColumn> columns) {

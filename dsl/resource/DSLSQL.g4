@@ -36,6 +36,15 @@ LIKE: L I K E;
 DESCRIBE: D E S C R I B E;
 SHOW: S H O W;
 SERVICES: S E R V I C E S;
+ON: O N;
+JOIN: J O I N;
+LEFT: L E F T;
+RIGHT: R I G H T;
+INNER: I N N E R;
+CLEAN: C L E A N;
+CACHES: C A C H E S;
+TEST: T E S T;
+CONNECTION: C O N N E C T I O N;
 
 fragment A: [aA];
 fragment B: [bB];
@@ -67,38 +76,77 @@ fragment HEX_DIGIT: [0-9A-F];
 fragment DEC_DIGIT: [0-9];
 fragment LETTER: [a-zA-Z];
 
-
 ID: ('A'..'Z' | 'a'..'z') ('A'..'Z' | 'a'..'z' | '_' | '0'..'9')*;
 TEXT_STRING: ( '\'' ( ('\\' '\\') | ('\'' '\'') | ('\\' '\'') | ~('\'') )* '\'');
 DECIMAL_LITERAL: DEC_DIGIT+;
-
 
 statement
     : selectStatement
     | describeServiceStatement
     | showServicesStatement
+    | cleanCachesStatement
+    | showCachesStatement
+    | testConnectionStatement
     ;
 
-describeServiceStatement
-    : DESCRIBE serviceName
+testConnectionStatement
+    : TEST CONNECTION
+    ;
+
+showCachesStatement
+    : SHOW CACHES serviceName?
+    ;
+
+cleanCachesStatement
+    : CLEAN CACHES serviceName?
     ;
 
 showServicesStatement
     : SHOW SERVICES (LIKE textLiteral)?
     ;
 
+describeServiceStatement
+    : DESCRIBE serviceName
+    ;
+
 selectStatement
-    : SELECT selectElements FROM subSelectStatement (whereClause)? (groupByCaluse)? (orderByClause)? (limitClause)?
+    : SELECT selectElements FROM subSelectStatement (joinCaluse)? (whereClause)? (groupByCaluse)? (orderByClause)? (limitClause)?
+    ;
+
+joinCaluse
+    : joinElement (joinElement)*
+    ;
+
+joinElement
+    : joinStatement subSelectStatement onStatement
+    ;
+
+joinStatement
+    : joinOperator JOIN
+    ;
+
+joinOperator
+    : LEFT
+    | RIGHT
+    | INNER
+    ;
+
+onStatement
+    : ON logicExpressions
     ;
 
 subSelectStatement
-    : serviceName
-    | '(' selectStatement ')' AS? serviceName
+    : serviceName (AS? uid)?
+    | '(' selectStatement ')' AS? uid
     ;
 
 selectElements
-    : star='*'
+    : star (',' star)*
     | selectElement (',' selectElement)*
+    ;
+
+star
+    : (uid '.')? '*'
     ;
 
 whereClause
@@ -110,15 +158,22 @@ logicExpressions
      ;
 
 logicExpression
-    : fullColumnName comparisonOperator value
+    : logicExpressionCal comparisonOperator logicExpressionCal
     | fullColumnName BETWEEN value AND value
     | fullColumnName NOT? IN '(' value (',' value)*  ')'
     | fullColumnName IS NOT? NULL
     | '(' logicExpressions ')'
     ;
 
+logicExpressionCal
+    : fullColumnName
+    | arithmeticCall
+    | functionCall
+    | value
+    ;
+
 groupByCaluse
-    :   GROUP BY groupByItem (',' groupByItem)*
+    : GROUP BY groupByItem (',' groupByItem)*
     ;
 
 orderByClause
@@ -181,20 +236,25 @@ selectElementCal
     ;
 
 fullColumnName
-    : columnName
+    : (uid '.')? columnName
     ;
 
 arithmeticCall
     : stringAndNumber (arithmetic stringAndNumber)+
+    | '(' arithmeticCall ')'
     ;
 
 stringAndNumber
     : fullColumnName
     | decimalLiteral
+    | '(' arithmeticCall ')'
     ;
 
 arithmetic
-    : ('+' | '-' | '*' | '/')
+    : '+'
+    | '-'
+    | '*'
+    | '/'
     ;
 
 functionCall
@@ -230,6 +290,6 @@ serviceName: tmpName=ID;
 
 columnName: ID;
 
-uid: ID;
+uid: aliasName=ID;
 
 WS : [ \t\r\n]+ -> skip ; // skip spaces, tabs, newlines

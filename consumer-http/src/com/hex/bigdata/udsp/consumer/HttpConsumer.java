@@ -1,6 +1,7 @@
 package com.hex.bigdata.udsp.consumer;
 
 import com.hex.bigdata.udsp.common.constant.ErrorCode;
+import com.hex.bigdata.udsp.common.constant.RequestType;
 import com.hex.bigdata.udsp.common.util.FTPClientConfig;
 import com.hex.bigdata.udsp.common.util.HostUtil;
 import com.hex.bigdata.udsp.consumer.model.ConsumeRequest;
@@ -58,13 +59,15 @@ public class HttpConsumer extends BaseController {
     public Response consume(@RequestBody String json, HttpServletRequest httpServletRequest) {
         Response response = new Response();
         long bef = System.currentTimeMillis();
+        Request request = null;
         try {
-            Request request = Util.jsonToRequest(json);
+            request = Util.jsonToRequest(json);
+            request.setRequestType (RequestType.OUTER.getValue ());
             request.setRequestIp(HostUtil.getRealRequestIp(httpServletRequest)); // 获取并设置客户端请求的IP
             response = consumerService.consume(request);
         } catch (Exception e) {
             e.printStackTrace();
-            loggingService.writeResponseLog(response, new ConsumeRequest(), bef, 0, ErrorCode.ERROR_000005, e.toString ());
+            loggingService.writeResponseLog(response, new ConsumeRequest(request), bef, 0, ErrorCode.ERROR_000005, e.toString ());
         }
         return response;
     }
